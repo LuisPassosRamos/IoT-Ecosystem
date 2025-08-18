@@ -20,3 +20,18 @@ docker-data/
 # IDE
 .vscode/
 .idea/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
