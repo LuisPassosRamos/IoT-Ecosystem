@@ -1,0 +1,243 @@
+[
+    {
+        "id": "coap-mqtt-bridge",
+        "type": "tab",
+        "label": "CoAP to MQTT Bridge",
+        "disabled": false,
+        "info": "Bridges CoAP sensor data to MQTT topics"
+    },
+    {
+        "id": "coap-poller",
+        "type": "inject",
+        "z": "coap-mqtt-bridge",
+        "name": "Poll CoAP Sensors",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 100,
+        "wires": [
+            ["coap-request"]
+        ]
+    },
+    {
+        "id": "coap-request",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "CoAP Request",
+        "func": "// CoAP request to environmental sensor\nconst coapUrl = \"coap://host.docker.internal:5683/sensor\";\n\nmsg.url = coapUrl;\nmsg.method = \"GET\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 100,
+        "wires": [
+            ["coap-client"]
+        ]
+    },
+    {
+        "id": "coap-client",
+        "type": "coap",
+        "z": "coap-mqtt-bridge",
+        "name": "CoAP Client",
+        "method": "GET",
+        "observe": false,
+        "url": "",
+        "contentFormat": "application/json",
+        "x": 550,
+        "y": 100,
+        "wires": [
+            ["parse-coap-data"]
+        ]
+    },
+    {
+        "id": "parse-coap-data",
+        "type": "json",
+        "z": "coap-mqtt-bridge",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 750,
+        "y": 100,
+        "wires": [
+            ["normalize-data"]
+        ]
+    },
+    {
+        "id": "normalize-data",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "Normalize to MQTT Format",
+        "func": "// Normalize CoAP data to MQTT sensor format\nconst coapData = msg.payload;\n\nif (!coapData || !coapData.measurements) {\n    return null;\n}\n\nconst messages = [];\nconst timestamp = coapData.timestamp;\nconst sensorId = coapData.sensor_id;\nconst isAnomaly = coapData.anomaly || false;\n\n// Convert each measurement to MQTT format\nfor (const [measureType, measurement] of Object.entries(coapData.measurements)) {\n    const mqttPayload = {\n        ts: timestamp,\n        type: measureType,\n        value: measurement.value,\n        unit: measurement.unit,\n        sensor_id: `${sensorId}-${measureType}`,\n        origin: \"fog\",\n        source_protocol: \"coap\"\n    };\n    \n    if (isAnomaly) {\n        mqttPayload.anomaly = true;\n    }\n    \n    const mqttMsg = {\n        topic: `sensors/${measureType}/${sensorId}-${measureType}`,\n        payload: JSON.stringify(mqttPayload)\n    };\n    \n    messages.push(mqttMsg);\n}\n\nreturn messages;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 200,
+        "wires": [
+            ["split-messages"]
+        ]
+    },
+    {
+        "id": "split-messages",
+        "type": "split",
+        "z": "coap-mqtt-bridge",
+        "name": "Split Messages",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "x": 450,
+        "y": 200,
+        "wires": [
+            ["mqtt-publish"]
+        ]
+    },
+    {
+        "id": "mqtt-publish",
+        "type": "mqtt out",
+        "z": "coap-mqtt-bridge",
+        "name": "Publish to MQTT",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 650,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "debug-output",
+        "type": "debug",
+        "z": "coap-mqtt-bridge",
+        "name": "Debug Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "IoT MQTT Broker",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "nodered-bridge",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "nodered/status",
+        "birthQos": "0",
+        "birthPayload": "connected",
+        "birthMsg": {},
+        "closeTopic": "nodered/status",
+        "closeQos": "0",
+        "closePayload": "disconnected",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "http-sensor-bridge",
+        "type": "tab",
+        "label": "HTTP Sensor Bridge",
+        "disabled": false,
+        "info": "Receives HTTP sensor data and forwards to MQTT"
+    },
+    {
+        "id": "http-endpoint",
+        "type": "http in",
+        "z": "http-sensor-bridge",
+        "name": "Sensor Data Endpoint",
+        "url": "/sensors/:type/:id",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 100,
+        "wires": [
+            ["validate-http-data"]
+        ]
+    },
+    {
+        "id": "validate-http-data",
+        "type": "function",
+        "z": "http-sensor-bridge",
+        "name": "Validate & Format",
+        "func": "// Validate and format incoming HTTP sensor data\nconst sensorType = msg.req.params.type;\nconst sensorId = msg.req.params.id;\nconst data = msg.payload;\n\nif (!data || typeof data.value === 'undefined') {\n    msg.statusCode = 400;\n    msg.payload = { error: \"Invalid sensor data\" };\n    return [null, msg]; // Send to error output\n}\n\n// Format for MQTT\nconst mqttPayload = {\n    ts: data.timestamp || new Date().toISOString(),\n    type: sensorType,\n    value: data.value,\n    unit: data.unit || \"\",\n    sensor_id: sensorId,\n    origin: \"fog\",\n    source_protocol: \"http\"\n};\n\nif (data.anomaly) {\n    mqttPayload.anomaly = true;\n}\n\nmsg.topic = `sensors/${sensorType}/${sensorId}`;\nmsg.payload = JSON.stringify(mqttPayload);\n\n// Response\nconst response = {\n    statusCode: 200,\n    payload: { status: \"received\", topic: msg.topic }\n};\n\nreturn [msg, response];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 100,
+        "wires": [
+            ["http-mqtt-publish"],
+            ["http-response"]
+        ]
+    },
+    {
+        "id": "http-mqtt-publish",
+        "type": "mqtt out",
+        "z": "http-sensor-bridge",
+        "name": "Publish HTTP Data",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 670,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "http-response",
+        "type": "http response",
+        "z": "http-sensor-bridge",
+        "name": "HTTP Response",
+        "statusCode": "",
+        "headers": {},
+        "x": 670,
+        "y": 120,
+        "wires": []
+    }
+]

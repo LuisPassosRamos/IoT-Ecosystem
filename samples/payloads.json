@@ -1,0 +1,246 @@
+{
+  "sensor_payloads": {
+    "mqtt_temperature": {
+      "topic": "sensors/temperature/temp-001",
+      "payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "temperature",
+        "value": 23.5,
+        "unit": "°C",
+        "sensor_id": "temp-001",
+        "origin": "edge",
+        "anomaly": false
+      }
+    },
+    "mqtt_humidity": {
+      "topic": "sensors/humidity/hum-001", 
+      "payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "humidity",
+        "value": 65.2,
+        "unit": "%",
+        "sensor_id": "hum-001",
+        "origin": "edge",
+        "anomaly": false
+      }
+    },
+    "mqtt_luminosity": {
+      "topic": "sensors/luminosity/lum-001",
+      "payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "luminosity",
+        "value": 850,
+        "unit": "lux",
+        "sensor_id": "lum-001",
+        "origin": "edge",
+        "anomaly": false
+      }
+    },
+    "mqtt_anomaly": {
+      "topic": "sensors/temperature/temp-001",
+      "payload": {
+        "ts": "2024-01-01T12:05:00Z",
+        "type": "temperature", 
+        "value": 45.2,
+        "unit": "°C",
+        "sensor_id": "temp-001",
+        "origin": "edge",
+        "anomaly": true
+      }
+    }
+  },
+  "coap_payloads": {
+    "environmental_sensor": {
+      "url": "coap://localhost:5683/sensor",
+      "response": {
+        "sensor_id": "coap-env-001",
+        "timestamp": "2024-01-01T12:00:00Z",
+        "measurements": {
+          "temperature": {
+            "value": 22.1,
+            "unit": "°C"
+          },
+          "humidity": {
+            "value": 65.2,
+            "unit": "%"
+          },
+          "pressure": {
+            "value": 1013.25,
+            "unit": "hPa"
+          }
+        },
+        "protocol": "coap",
+        "origin": "edge"
+      }
+    }
+  },
+  "http_payloads": {
+    "post_sensor_data": {
+      "url": "http://localhost:1880/sensors/temperature/temp-002",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "value": 24.1,
+        "unit": "°C",
+        "timestamp": "2024-01-01T12:00:00Z",
+        "anomaly": false
+      }
+    }
+  },
+  "api_responses": {
+    "latest_sensors": {
+      "endpoint": "GET /v1/sensors/latest",
+      "response": {
+        "sensors": {
+          "temperature": [
+            {
+              "id": 1,
+              "timestamp": "2024-01-01T12:00:00Z",
+              "sensor_type": "temperature",
+              "sensor_id": "temp-001",
+              "value": 23.5,
+              "unit": "°C",
+              "origin": "edge",
+              "source_protocol": "mqtt",
+              "anomaly": false
+            }
+          ],
+          "humidity": [
+            {
+              "id": 2,
+              "timestamp": "2024-01-01T12:00:00Z", 
+              "sensor_type": "humidity",
+              "sensor_id": "hum-001",
+              "value": 65.2,
+              "unit": "%",
+              "origin": "edge",
+              "source_protocol": "mqtt",
+              "anomaly": false
+            }
+          ]
+        },
+        "total_count": 2,
+        "last_updated": "2024-01-01T12:00:00Z"
+      }
+    },
+    "weather_comparison": {
+      "endpoint": "GET /v1/sensors/compare/weather?city=London",
+      "response": {
+        "weather_data": {
+          "city": "London",
+          "temperature": 18.2,
+          "humidity": 72.0,
+          "pressure": 1015.3,
+          "description": "scattered clouds",
+          "timestamp": "2024-01-01T12:00:00Z"
+        },
+        "sensor_data": {
+          "temperature": {
+            "value": 23.5,
+            "timestamp": "2024-01-01T11:58:00Z",
+            "sensor_id": "temp-001"
+          },
+          "humidity": {
+            "value": 65.2,
+            "timestamp": "2024-01-01T11:59:00Z",
+            "sensor_id": "hum-001"
+          }
+        },
+        "comparison": {
+          "weather": {
+            "temperature": 18.2,
+            "humidity": 72.0,
+            "pressure": 1015.3
+          },
+          "sensor": {
+            "temperature": 23.5,
+            "humidity": 65.2
+          },
+          "differences": {
+            "temperature": 5.3,
+            "humidity": 6.8
+          },
+          "alerts": [
+            {
+              "type": "temperature_discrepancy",
+              "message": "Large temperature difference: sensor 23.5°C vs weather 18.2°C",
+              "severity": "warning"
+            }
+          ]
+        },
+        "timestamp": "2024-01-01T12:00:00Z"
+      }
+    }
+  },
+  "websocket_messages": {
+    "sensor_data_update": {
+      "type": "sensor_data",
+      "data": {
+        "timestamp": "2024-01-01T12:00:00Z",
+        "sensor_type": "temperature",
+        "sensor_id": "temp-001",
+        "value": 24.2,
+        "unit": "°C",
+        "origin": "edge",
+        "source_protocol": "mqtt",
+        "anomaly": false
+      },
+      "timestamp": "2024-01-01T12:00:00Z"
+    },
+    "anomaly_alert": {
+      "type": "alert",
+      "data": {
+        "alert_type": "sensor_anomaly",
+        "sensor_id": "temp-001",
+        "sensor_type": "temperature",
+        "value": 45.8,
+        "threshold": 32.0,
+        "message": "Temperature reading exceeds normal range",
+        "severity": "warning"
+      },
+      "timestamp": "2024-01-01T12:05:00Z"
+    },
+    "system_status": {
+      "type": "system_status",
+      "data": {
+        "service": "node-red",
+        "status": "connected",
+        "topic": "nodered/status"
+      },
+      "timestamp": "2024-01-01T12:00:00Z"
+    }
+  },
+  "node_red_examples": {
+    "coap_to_mqtt_message": {
+      "input": {
+        "url": "coap://host.docker.internal:5683/sensor",
+        "method": "GET"
+      },
+      "output": {
+        "topic": "sensors/temperature/coap-env-001-temperature",
+        "payload": "{\"ts\":\"2024-01-01T12:00:00Z\",\"type\":\"temperature\",\"value\":22.1,\"unit\":\"°C\",\"sensor_id\":\"coap-env-001-temperature\",\"origin\":\"fog\",\"source_protocol\":\"coap\"}"
+      }
+    }
+  },
+  "authentication": {
+    "login_request": {
+      "endpoint": "POST /v1/auth/login",
+      "body": {
+        "username": "admin",
+        "password": "admin123"
+      }
+    },
+    "login_response": {
+      "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+      "token_type": "bearer",
+      "expires_in": 86400
+    },
+    "authenticated_request": {
+      "headers": {
+        "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+      }
+    }
+  }
+}
