@@ -1,0 +1,374 @@
+{
+  "sensor_readings": [
+    {
+      "ts": "2024-01-01T12:00:00Z",
+      "type": "temperature",
+      "value": 23.5,
+      "unit": "celsius",
+      "sensor_id": "temp_sim_001",
+      "origin": "edge",
+      "anomaly": false
+    },
+    {
+      "ts": "2024-01-01T12:00:05Z",
+      "type": "humidity",
+      "value": 65.2,
+      "unit": "percent",
+      "sensor_id": "humidity_sim_001",
+      "origin": "edge",
+      "anomaly": false
+    },
+    {
+      "ts": "2024-01-01T12:00:10Z",
+      "type": "luminosity",
+      "value": 450.7,
+      "unit": "lux",
+      "sensor_id": "luminosity_sim_001",
+      "origin": "edge",
+      "anomaly": false
+    },
+    {
+      "ts": "2024-01-01T12:01:00Z",
+      "type": "temperature",
+      "value": 45.2,
+      "unit": "celsius",
+      "sensor_id": "temp_sim_001",
+      "origin": "edge",
+      "anomaly": true,
+      "anomaly_details": {
+        "out_of_range": true,
+        "sudden_jump": true,
+        "previous_value": 23.5,
+        "threshold_min": 15.0,
+        "threshold_max": 35.0
+      }
+    },
+    {
+      "ts": "2024-01-01T12:01:05Z",
+      "type": "humidity",
+      "value": 15.8,
+      "unit": "percent",
+      "sensor_id": "humidity_sim_001",
+      "origin": "edge",
+      "anomaly": true,
+      "anomaly_details": {
+        "out_of_range": true,
+        "sudden_jump": true,
+        "previous_value": 65.2,
+        "threshold_min": 30.0,
+        "threshold_max": 90.0
+      }
+    }
+  ],
+  "coap_responses": [
+    {
+      "ts": "2024-01-01T12:00:00Z",
+      "type": "temperature",
+      "value": 26.1,
+      "unit": "celsius",
+      "sensor_id": "coap_temp_001",
+      "origin": "coap",
+      "protocol": "coap",
+      "reading_count": 42
+    },
+    {
+      "ts": "2024-01-01T12:00:00Z",
+      "type": "humidity",
+      "value": 58.3,
+      "unit": "percent",
+      "sensor_id": "coap_humidity_001",
+      "origin": "coap",
+      "protocol": "coap",
+      "reading_count": 38
+    }
+  ],
+  "fog_bridge_data": [
+    {
+      "ts": "2024-01-01T12:00:00Z",
+      "type": "temperature",
+      "value": 26.1,
+      "unit": "celsius",
+      "sensor_id": "coap_temp_001_fog",
+      "origin": "fog",
+      "protocol": "coap_bridge",
+      "anomaly": false,
+      "bridge_timestamp": "2024-01-01T12:00:01Z",
+      "original_payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "temperature",
+        "value": 26.1,
+        "unit": "celsius",
+        "sensor_id": "coap_temp_001",
+        "origin": "coap",
+        "protocol": "coap",
+        "reading_count": 42
+      }
+    }
+  ],
+  "mqtt_topics": [
+    {
+      "topic": "sensors/temperature/sim001",
+      "description": "Direct temperature readings from MQTT sensor simulator",
+      "qos": 1,
+      "retain": false
+    },
+    {
+      "topic": "sensors/humidity/sim001",
+      "description": "Direct humidity readings from MQTT sensor simulator",
+      "qos": 1,
+      "retain": false
+    },
+    {
+      "topic": "sensors/luminosity/sim001",
+      "description": "Direct luminosity readings from MQTT sensor simulator",
+      "qos": 1,
+      "retain": false
+    },
+    {
+      "topic": "sensors/temperature/fog_bridge",
+      "description": "Temperature readings bridged from CoAP via Node-RED",
+      "qos": 1,
+      "retain": false
+    },
+    {
+      "topic": "sensors/humidity/fog_bridge",
+      "description": "Humidity readings bridged from CoAP via Node-RED",
+      "qos": 1,
+      "retain": false
+    },
+    {
+      "topic": "fog/bridge/status",
+      "description": "Fog bridge status and health information",
+      "qos": 1,
+      "retain": true
+    },
+    {
+      "topic": "fog/bridge/errors",
+      "description": "Error reports from the fog bridge",
+      "qos": 1,
+      "retain": false
+    }
+  ],
+  "api_examples": [
+    {
+      "endpoint": "GET /v1/sensors/latest",
+      "description": "Get latest readings from all sensor types",
+      "example_response": {
+        "temperature": {
+          "id": 1543,
+          "timestamp": "2024-01-01T12:00:00Z",
+          "sensor_type": "temperature",
+          "sensor_id": "temp_sim_001",
+          "value": 23.5,
+          "unit": "celsius",
+          "origin": "edge",
+          "anomaly": false,
+          "created_at": "2024-01-01T12:00:01Z"
+        },
+        "humidity": {
+          "id": 1544,
+          "timestamp": "2024-01-01T12:00:05Z",
+          "sensor_type": "humidity",
+          "sensor_id": "humidity_sim_001",
+          "value": 65.2,
+          "unit": "percent",
+          "origin": "edge",
+          "anomaly": false,
+          "created_at": "2024-01-01T12:00:06Z"
+        },
+        "total_readings": 2048
+      }
+    },
+    {
+      "endpoint": "POST /v1/auth/login",
+      "description": "Authenticate user and receive JWT token",
+      "example_request": {
+        "username": "admin",
+        "password": "password123"
+      },
+      "example_response": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        "token_type": "bearer",
+        "expires_in": 86400,
+        "user": "admin"
+      }
+    },
+    {
+      "endpoint": "GET /v1/external/weather?city=London",
+      "description": "Get weather data and compare with local sensors",
+      "example_response": {
+        "city": "London",
+        "country": "GB",
+        "temperature": 18.5,
+        "humidity": 72.0,
+        "description": "light rain",
+        "timestamp": "2024-01-01T12:00:00Z",
+        "comparison": {
+          "weather_api": {
+            "temperature": 18.5,
+            "humidity": 72.0
+          },
+          "local_sensors": {
+            "temperature": 23.5,
+            "humidity": 65.2
+          },
+          "differences": {
+            "temperature": {
+              "absolute_difference": 5.0,
+              "percentage_difference": 27.0
+            },
+            "humidity": {
+              "absolute_difference": 6.8,
+              "percentage_difference": 9.4
+            }
+          },
+          "alerts": [
+            {
+              "type": "temperature_discrepancy",
+              "message": "Local temperature differs from weather API by 5.0°C (threshold: 5.0°C)",
+              "severity": "medium"
+            }
+          ],
+          "has_alerts": true
+        }
+      }
+    }
+  ],
+  "websocket_messages": [
+    {
+      "type": "connection_established",
+      "description": "Sent when WebSocket connection is established",
+      "example": {
+        "type": "connection_established",
+        "data": {
+          "message": "Connected to IoT-Ecosystem real-time stream",
+          "features": ["sensor_data", "system_status", "anomaly_alerts"]
+        },
+        "timestamp": "2024-01-01T12:00:00Z"
+      }
+    },
+    {
+      "type": "sensor_data",
+      "description": "Real-time sensor data updates",
+      "example": {
+        "type": "sensor_data",
+        "data": {
+          "topic": "sensors/temperature/sim001",
+          "payload": {
+            "ts": "2024-01-01T12:00:00Z",
+            "type": "temperature",
+            "value": 23.5,
+            "unit": "celsius",
+            "sensor_id": "temp_sim_001",
+            "origin": "edge",
+            "anomaly": false
+          },
+          "sensor_type": "temperature",
+          "value": 23.5,
+          "anomaly": false
+        },
+        "timestamp": "2024-01-01T12:00:01Z"
+      }
+    },
+    {
+      "type": "ping",
+      "description": "Client heartbeat message",
+      "example": {
+        "type": "ping",
+        "timestamp": "2024-01-01T12:00:00Z"
+      }
+    },
+    {
+      "type": "pong",
+      "description": "Server heartbeat response",
+      "example": {
+        "type": "pong",
+        "data": {
+          "timestamp": "2024-01-01T12:00:00Z"
+        }
+      }
+    }
+  ],
+  "anomaly_examples": [
+    {
+      "sensor_type": "temperature",
+      "anomaly_type": "out_of_range",
+      "description": "Temperature reading outside acceptable range",
+      "payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "temperature",
+        "value": 45.2,
+        "unit": "celsius",
+        "sensor_id": "temp_sim_001",
+        "origin": "edge",
+        "anomaly": true,
+        "anomaly_details": {
+          "out_of_range": true,
+          "sudden_jump": false,
+          "threshold_min": 15.0,
+          "threshold_max": 35.0
+        }
+      }
+    },
+    {
+      "sensor_type": "humidity",
+      "anomaly_type": "sudden_jump",
+      "description": "Sudden change in humidity reading",
+      "payload": {
+        "ts": "2024-01-01T12:00:00Z",
+        "type": "humidity",
+        "value": 95.8,
+        "unit": "percent",
+        "sensor_id": "humidity_sim_001",
+        "origin": "edge",
+        "anomaly": true,
+        "anomaly_details": {
+          "out_of_range": false,
+          "sudden_jump": true,
+          "previous_value": 65.2,
+          "jump_threshold": 20.0
+        }
+      }
+    }
+  ],
+  "curl_examples": [
+    {
+      "description": "Login and get JWT token",
+      "command": "curl -X POST http://localhost:8000/v1/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"password123\"}'"
+    },
+    {
+      "description": "Get latest sensor readings (authenticated)",
+      "command": "curl -X GET http://localhost:8000/v1/sensors/latest -H \"Authorization: Bearer YOUR_JWT_TOKEN\""
+    },
+    {
+      "description": "Get sensor history with filters",
+      "command": "curl -X GET \"http://localhost:8000/v1/sensors/history?sensor_type=temperature&limit=50&anomalies_only=true\""
+    },
+    {
+      "description": "Get weather data for comparison",
+      "command": "curl -X GET \"http://localhost:8000/v1/external/weather?city=London\""
+    },
+    {
+      "description": "Check system health",
+      "command": "curl -X GET http://localhost:8000/health"
+    }
+  ],
+  "mosquitto_examples": [
+    {
+      "description": "Subscribe to all sensor topics",
+      "command": "mosquitto_sub -h localhost -p 1883 -t \"sensors/+/+\" -v"
+    },
+    {
+      "description": "Subscribe to temperature sensors only",
+      "command": "mosquitto_sub -h localhost -p 1883 -t \"sensors/temperature/+\" -v"
+    },
+    {
+      "description": "Subscribe to fog bridge status",
+      "command": "mosquitto_sub -h localhost -p 1883 -t \"fog/bridge/status\" -v"
+    },
+    {
+      "description": "Publish test message",
+      "command": "mosquitto_pub -h localhost -p 1883 -t \"sensors/test/manual\" -m '{\"ts\":\"2024-01-01T12:00:00Z\",\"type\":\"test\",\"value\":42,\"sensor_id\":\"manual_test\"}'"
+    }
+  ]
+}

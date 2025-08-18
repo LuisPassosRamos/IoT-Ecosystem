@@ -1,0 +1,450 @@
+[
+    {
+        "id": "coap-mqtt-bridge",
+        "type": "tab",
+        "label": "CoAP-MQTT Bridge",
+        "disabled": false,
+        "info": "Fog layer bridge between CoAP sensors and MQTT broker"
+    },
+    {
+        "id": "coap-temp-request",
+        "type": "inject",
+        "z": "coap-mqtt-bridge",
+        "name": "Poll Temperature",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 120,
+        "wires": [
+            [
+                "coap-temp-client"
+            ]
+        ]
+    },
+    {
+        "id": "coap-temp-client",
+        "type": "coap request",
+        "z": "coap-mqtt-bridge",
+        "name": "Get Temperature",
+        "method": "GET",
+        "url": "coap://coap_sensor:5683/temperature",
+        "payload": "",
+        "payloadType": "str",
+        "options": "",
+        "x": 340,
+        "y": 120,
+        "wires": [
+            [
+                "temp-json-parser"
+            ]
+        ]
+    },
+    {
+        "id": "temp-json-parser",
+        "type": "json",
+        "z": "coap-mqtt-bridge",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 540,
+        "y": 120,
+        "wires": [
+            [
+                "temp-normalizer"
+            ]
+        ]
+    },
+    {
+        "id": "temp-normalizer",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "Normalize Temperature",
+        "func": "// Normalize CoAP sensor data to standard format\nif (msg.payload && typeof msg.payload === 'object') {\n    var normalized = {\n        ts: msg.payload.ts || new Date().toISOString(),\n        type: msg.payload.type || 'temperature',\n        value: msg.payload.value,\n        unit: msg.payload.unit || 'celsius',\n        sensor_id: msg.payload.sensor_id + '_fog',\n        origin: 'fog',\n        protocol: 'coap_bridge',\n        anomaly: false,\n        bridge_timestamp: new Date().toISOString(),\n        original_payload: msg.payload\n    };\n    \n    // Basic anomaly detection at fog level\n    if (normalized.value < 15 || normalized.value > 35) {\n        normalized.anomaly = true;\n        normalized.anomaly_details = {\n            out_of_range: true,\n            threshold_min: 15,\n            threshold_max: 35,\n            detected_at: 'fog_layer'\n        };\n    }\n    \n    msg.payload = normalized;\n    msg.topic = 'sensors/temperature/fog_bridge';\n    \n    // Log the bridge operation\n    node.log(`Bridged CoAP temperature: ${normalized.value}°C (anomaly: ${normalized.anomaly})`);\n    \n    return msg;\n} else {\n    node.error('Invalid CoAP response format', msg);\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 120,
+        "wires": [
+            [
+                "mqtt-temp-publish",
+                "temp-debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-temp-publish",
+        "type": "mqtt out",
+        "z": "coap-mqtt-bridge",
+        "name": "Publish to MQTT",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 980,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "coap-humidity-request",
+        "type": "inject",
+        "z": "coap-mqtt-bridge",
+        "name": "Poll Humidity",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "7",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.2,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 240,
+        "wires": [
+            [
+                "coap-humidity-client"
+            ]
+        ]
+    },
+    {
+        "id": "coap-humidity-client",
+        "type": "coap request",
+        "z": "coap-mqtt-bridge",
+        "name": "Get Humidity",
+        "method": "GET",
+        "url": "coap://coap_sensor:5683/humidity",
+        "payload": "",
+        "payloadType": "str",
+        "options": "",
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "humidity-json-parser"
+            ]
+        ]
+    },
+    {
+        "id": "humidity-json-parser",
+        "type": "json",
+        "z": "coap-mqtt-bridge",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 540,
+        "y": 240,
+        "wires": [
+            [
+                "humidity-normalizer"
+            ]
+        ]
+    },
+    {
+        "id": "humidity-normalizer",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "Normalize Humidity",
+        "func": "// Normalize CoAP humidity data to standard format\nif (msg.payload && typeof msg.payload === 'object') {\n    var normalized = {\n        ts: msg.payload.ts || new Date().toISOString(),\n        type: msg.payload.type || 'humidity',\n        value: msg.payload.value,\n        unit: msg.payload.unit || 'percent',\n        sensor_id: msg.payload.sensor_id + '_fog',\n        origin: 'fog',\n        protocol: 'coap_bridge',\n        anomaly: false,\n        bridge_timestamp: new Date().toISOString(),\n        original_payload: msg.payload\n    };\n    \n    // Basic anomaly detection at fog level\n    if (normalized.value < 30 || normalized.value > 90) {\n        normalized.anomaly = true;\n        normalized.anomaly_details = {\n            out_of_range: true,\n            threshold_min: 30,\n            threshold_max: 90,\n            detected_at: 'fog_layer'\n        };\n    }\n    \n    msg.payload = normalized;\n    msg.topic = 'sensors/humidity/fog_bridge';\n    \n    // Log the bridge operation\n    node.log(`Bridged CoAP humidity: ${normalized.value}% (anomaly: ${normalized.anomaly})`);\n    \n    return msg;\n} else {\n    node.error('Invalid CoAP response format', msg);\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 240,
+        "wires": [
+            [
+                "mqtt-humidity-publish",
+                "humidity-debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-humidity-publish",
+        "type": "mqtt out",
+        "z": "coap-mqtt-bridge",
+        "name": "Publish to MQTT",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 980,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "coap-status-request",
+        "type": "inject",
+        "z": "coap-mqtt-bridge",
+        "name": "Check Status",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "30",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 360,
+        "wires": [
+            [
+                "coap-status-client"
+            ]
+        ]
+    },
+    {
+        "id": "coap-status-client",
+        "type": "coap request",
+        "z": "coap-mqtt-bridge",
+        "name": "Get Status",
+        "method": "GET",
+        "url": "coap://coap_sensor:5683/status",
+        "payload": "",
+        "payloadType": "str",
+        "options": "",
+        "x": 340,
+        "y": 360,
+        "wires": [
+            [
+                "status-json-parser"
+            ]
+        ]
+    },
+    {
+        "id": "status-json-parser",
+        "type": "json",
+        "z": "coap-mqtt-bridge",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 540,
+        "y": 360,
+        "wires": [
+            [
+                "status-processor"
+            ]
+        ]
+    },
+    {
+        "id": "status-processor",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "Process Status",
+        "func": "// Process CoAP server status\nif (msg.payload && typeof msg.payload === 'object') {\n    var status = {\n        type: 'system_status',\n        bridge_name: 'coap-mqtt-fog-bridge',\n        coap_server: {\n            status: msg.payload.status,\n            uptime_seconds: msg.payload.uptime_seconds,\n            resources: msg.payload.resources\n        },\n        bridge_info: {\n            status: 'active',\n            last_check: new Date().toISOString(),\n            processed_readings: {\n                temperature: msg.payload.resources?.temperature?.readings_served || 0,\n                humidity: msg.payload.resources?.humidity?.readings_served || 0\n            }\n        }\n    };\n    \n    msg.payload = status;\n    msg.topic = 'fog/bridge/status';\n    \n    // Log status\n    node.log(`CoAP server status: ${status.coap_server.status}, uptime: ${status.coap_server.uptime_seconds}s`);\n    \n    return msg;\n} else {\n    node.error('Invalid status response format', msg);\n    return null;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 360,
+        "wires": [
+            [
+                "mqtt-status-publish",
+                "status-debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-status-publish",
+        "type": "mqtt out",
+        "z": "coap-mqtt-bridge",
+        "name": "Publish Status",
+        "topic": "",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 980,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "temp-debug",
+        "type": "debug",
+        "z": "coap-mqtt-bridge",
+        "name": "Temperature Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "humidity-debug",
+        "type": "debug",
+        "z": "coap-mqtt-bridge",
+        "name": "Humidity Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "status-debug",
+        "type": "debug",
+        "z": "coap-mqtt-bridge",
+        "name": "Status Debug",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "error-handler",
+        "type": "catch",
+        "z": "coap-mqtt-bridge",
+        "name": "Error Handler",
+        "scope": null,
+        "uncaught": false,
+        "x": 140,
+        "y": 480,
+        "wires": [
+            [
+                "error-processor"
+            ]
+        ]
+    },
+    {
+        "id": "error-processor",
+        "type": "function",
+        "z": "coap-mqtt-bridge",
+        "name": "Process Error",
+        "func": "// Process and log errors\nvar errorInfo = {\n    type: 'bridge_error',\n    timestamp: new Date().toISOString(),\n    error: msg.error ? msg.error.message : 'Unknown error',\n    source_node: msg.error ? msg.error.source.name : 'Unknown',\n    bridge: 'coap-mqtt-fog-bridge'\n};\n\n// Log error\nnode.error(`Bridge error: ${errorInfo.error} from ${errorInfo.source_node}`);\n\n// Publish error to MQTT for monitoring\nmsg.payload = errorInfo;\nmsg.topic = 'fog/bridge/errors';\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 480,
+        "wires": [
+            [
+                "mqtt-error-publish",
+                "error-debug"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-error-publish",
+        "type": "mqtt out",
+        "z": "coap-mqtt-bridge",
+        "name": "Publish Error",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqtt-broker",
+        "x": 560,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "error-debug",
+        "type": "debug",
+        "z": "coap-mqtt-bridge",
+        "name": "Error Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "IoT MQTT Broker",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "node-red-fog-bridge",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "fog/bridge/status",
+        "birthQos": "1",
+        "birthRetain": "true",
+        "birthPayload": "{\"status\":\"online\",\"bridge\":\"coap-mqtt-fog-bridge\",\"timestamp\":\"${timestamp}\"}",
+        "birthMsg": {},
+        "closeTopic": "fog/bridge/status",
+        "closeQos": "1",
+        "closeRetain": "true",
+        "closePayload": "{\"status\":\"offline\",\"bridge\":\"coap-mqtt-fog-bridge\",\"timestamp\":\"${timestamp}\"}",
+        "closeMsg": {},
+        "willTopic": "fog/bridge/status",
+        "willQos": "1",
+        "willRetain": "true",
+        "willPayload": "{\"status\":\"disconnected\",\"bridge\":\"coap-mqtt-fog-bridge\",\"timestamp\":\"${timestamp}\"}",
+        "willMsg": {},
+        "sessionExpiry": ""
+    }
+]
