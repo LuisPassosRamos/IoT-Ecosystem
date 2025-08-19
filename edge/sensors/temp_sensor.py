@@ -2,6 +2,7 @@ import os
 import time
 import json
 import random
+import logging
 from datetime import datetime
 import paho.mqtt.client as mqtt
 
@@ -13,11 +14,22 @@ TOPIC = f"sensors/temperature/{SENSOR_ID}"
 NORMAL_RANGE = (18.0, 32.0)
 ANOMALY_THRESHOLD = 5.0
 UPDATE_INTERVAL = 2
+MAX_RECONNECT_ATTEMPTS = 5
+RECONNECT_DELAY = 5
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class TemperatureSensor:
     def __init__(self):
         self.client = mqtt.Client(client_id=f"sensor-{SENSOR_ID}")
         self.last_value = 22.0
+        self.is_connected = False
+        self.reconnect_attempts = 0
         self.setup_mqtt()
     
     def setup_mqtt(self):
@@ -26,12 +38,34 @@ class TemperatureSensor:
         
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            print(f"Connected to MQTT broker at {MQTT_HOST}:{MQTT_PORT}")
+            self.is_connected = True
+            self.reconnect_attempts = 0
+            logger.info(f"Connected to MQTT broker at {MQTT_HOST}:{MQTT_PORT}")
         else:
-            print(f"Failed to connect to MQTT broker: {rc}")
+            self.is_connected = False
+            logger.error(f"Failed to connect to MQTT broker: {rc}")
     
     def on_disconnect(self, client, userdata, rc):
-        print("Disconnected from MQTT broker")
+        self.is_connected = False
+        logger.warning("Disconnected from MQTT broker")
+        
+    def connect_with_retry(self):
+        """Attempt to connect to MQTT broker with retry logic"""
+        while self.reconnect_attempts < MAX_RECONNECT_ATTEMPTS:
+            try:
+                logger.info(f"Attempting to connect to MQTT broker (attempt {self.reconnect_attempts + 1}/{MAX_RECONNECT_ATTEMPTS})")
+                self.client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+                self.client.loop_start()
+                return True
+            except Exception as e:
+                self.reconnect_attempts += 1
+                logger.error(f"Connection attempt {self.reconnect_attempts} failed: {e}")
+                if self.reconnect_attempts < MAX_RECONNECT_ATTEMPTS:
+                    logger.info(f"Retrying in {RECONNECT_DELAY} seconds...")
+                    time.sleep(RECONNECT_DELAY)
+        
+        logger.error("Max reconnection attempts reached. Unable to connect to MQTT broker.")
+        return False
     
     def detect_anomaly(self, value):
         anomaly = False
@@ -71,34 +105,52 @@ class TemperatureSensor:
     def publish_reading(self):
         value = self.generate_reading()
         payload = self.create_payload(value)
+        
+        # Check connection status
+        if not self.is_connected:
+            logger.warning("MQTT client not connected. Attempting to reconnect...")
+            if not self.connect_with_retry():
+                logger.error("Unable to reconnect. Skipping this reading.")
+                return
+        
         try:
             result = self.client.publish(TOPIC, json.dumps(payload), qos=1, retain=False)
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
                 status = "[ANOMALY]" if payload.get("anomaly") else "[NORMAL]"
-                print(f"{status} Published: {payload}")
+                logger.info(f"{status} Published: {json.dumps(payload)}")
             else:
-                print(f"Failed to publish: {result.rc}")
+                logger.error(f"Failed to publish: {result.rc}")
         except Exception as e:
-            print(f"Error publishing: {e}")
+            logger.error(f"Error publishing: {e}")
+            self.is_connected = False
         self.last_value = value
     
     def run(self):
         try:
-            self.client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
-            self.client.loop_start()
-            print(f"Temperature sensor {SENSOR_ID} started")
-            print(f"Publishing to topic: {TOPIC}")
-            print("Press Ctrl+C to stop")
+            logger.info(f"Starting temperature sensor {SENSOR_ID}")
+            logger.info(f"Target MQTT broker: {MQTT_HOST}:{MQTT_PORT}")
+            logger.info(f"Publishing to topic: {TOPIC}")
+            
+            if not self.connect_with_retry():
+                logger.error("Failed to establish initial connection. Exiting.")
+                return
+                
+            logger.info("Temperature sensor started successfully")
+            logger.info("Press Ctrl+C to stop")
+            
             while True:
                 self.publish_reading()
                 time.sleep(UPDATE_INTERVAL)
+                
         except KeyboardInterrupt:
-            print("\nShutting down sensor...")
+            logger.info("Shutting down sensor...")
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f"Unexpected error: {e}")
         finally:
-            self.client.loop_stop()
-            self.client.disconnect()
+            if self.is_connected:
+                self.client.loop_stop()
+                self.client.disconnect()
+            logger.info("Temperature sensor stopped")
 
 if __name__ == "__main__":
     sensor = TemperatureSensor()

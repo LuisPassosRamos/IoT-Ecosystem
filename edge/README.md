@@ -34,15 +34,57 @@ sensors/{sensor_type}/{sensor_id}
 
 ## Running Sensors
 
-### Prerequisites
+### Prerequisites for Local Development
 ```bash
-pip install paho-mqtt aiocoap
+pip install -r edge/sensors/requirements.txt
 ```
 
 ### Environment Variables
 ```bash
 export MQTT_HOST=localhost
 export MQTT_PORT=1883
+```
+
+### Docker Container (Recommended)
+
+#### Start Temperature Sensor with Docker Compose
+Run the temperature sensor with automatic dependency installation:
+```bash
+docker compose up --build temp-sensor
+```
+
+This will automatically:
+- Install all required dependencies (paho-mqtt, etc.)
+- Start the temperature sensor
+- Handle MQTT connection and reconnection
+- Display structured logging output
+
+#### Environment Variables for Docker
+Configure in `.env` file:
+```bash
+# MQTT Configuration
+MQTT_HOST=mosquitto
+MQTT_PORT=1883
+
+# Edge Sensors Configuration  
+SENSOR_UPDATE_INTERVAL=2
+SENSOR_RECONNECT_ATTEMPTS=5
+SENSOR_RECONNECT_DELAY=5
+```
+
+### Local Development (Alternative)
+
+Install dependencies and run locally for development:
+```bash
+# Install dependencies
+pip install -r edge/sensors/requirements.txt
+
+# Set environment variables  
+export MQTT_HOST=localhost
+export MQTT_PORT=1883
+
+# Run temperature sensor
+python edge/sensors/temp_sensor.py
 ```
 
 ### Start Individual Sensors
@@ -155,16 +197,22 @@ The cloud backend subscribes to all sensor topics and stores data in the databas
 ## Monitoring
 
 ### Debug Output
-All sensors print their published data to console:
+All sensors print structured logging to console:
 ```
-[NORMAL] Published: {"ts": "2024-01-01T12:00:00Z", "type": "temperature", "value": 23.5, ...}
-[ANOMALY] Published: {"ts": "2024-01-01T12:05:00Z", "type": "temperature", "value": 45.2, "anomaly": true, ...}
+2025-08-19 22:12:34,657 - INFO - Starting temperature sensor temp-001
+2025-08-19 22:12:34,657 - INFO - Target MQTT broker: localhost:1883
+2025-08-19 22:12:34,657 - INFO - Publishing to topic: sensors/temperature/temp-001
+2025-08-19 22:12:34,657 - INFO - Attempting to connect to MQTT broker (attempt 1/5)
+2025-08-19 22:12:40,123 - INFO - Connected to MQTT broker at localhost:1883
+2025-08-19 22:12:40,124 - INFO - [NORMAL] Published: {"ts": "2024-01-01T12:00:00Z", "type": "temperature", "value": 23.5, ...}
+2025-08-19 22:12:42,125 - INFO - [ANOMALY] Published: {"ts": "2024-01-01T12:05:00Z", "type": "temperature", "value": 45.2, "anomaly": true, ...}
 ```
 
 ### Health Checks
-- MQTT connection status
-- Publishing success/failure
-- Anomaly detection triggers
+- MQTT connection status with automatic reconnection
+- Publishing success/failure tracking
+- Anomaly detection triggers with detailed logging
+- Structured error messages for easier debugging
 
 ## Customization
 
@@ -192,19 +240,47 @@ Sensors can be configured for different environments:
 
 ## Troubleshooting
 
+### ModuleNotFoundError: No module named 'paho'
+
+This error is now **resolved** with the containerized approach:
+
+#### Solution 1: Use Docker (Recommended)
+```bash
+# Dependencies are automatically installed
+docker compose up --build temp-sensor
+```
+
+#### Solution 2: Local Development  
+```bash
+# Install dependencies manually
+pip install -r edge/sensors/requirements.txt
+python edge/sensors/temp_sensor.py
+```
+
 ### Connection Issues
 ```bash
 # Test MQTT broker connectivity
 mosquitto_pub -h localhost -t test -m "hello"
 
 # Check if broker is running
-docker-compose ps mosquitto
+docker compose ps mosquitto
+
+# View sensor logs
+docker compose logs temp-sensor
 ```
 
 ### Permission Errors
 ```bash
 # Ensure Python can access network
 sudo setcap 'cap_net_bind_service=+ep' /usr/bin/python3
+```
+
+### Container Build Issues
+```bash
+# Clean rebuild
+docker compose down
+docker compose build --no-cache temp-sensor
+docker compose up temp-sensor
 ```
 
 ### Data Not Appearing
