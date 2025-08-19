@@ -54,6 +54,21 @@ services:
       - backend
     restart: unless-stopped
 
+  temp-sensor:
+    build:
+      context: ./edge/sensors
+      dockerfile: Dockerfile
+    container_name: iot-temp-sensor
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+    env_file:
+      - .env
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+    command: ["python", "temp_sensor.py"]
+
 volumes:
   mosquitto_data:
   nodered_data:

@@ -34,15 +34,57 @@ sensors/{sensor_type}/{sensor_id}
 
 ## Running Sensors
 
-### Prerequisites
+### Prerequisites for Local Development
 ```bash
-pip install paho-mqtt aiocoap
+pip install -r edge/sensors/requirements.txt
 ```
 
 ### Environment Variables
 ```bash
 export MQTT_HOST=localhost
 export MQTT_PORT=1883
+```
+
+### Docker Container (Recommended)
+
+#### Start Temperature Sensor with Docker Compose
+Run the temperature sensor with automatic dependency installation:
+```bash
+docker compose up --build temp-sensor
+```
+
+This will automatically:
+- Install all required dependencies (paho-mqtt, etc.)
+- Start the temperature sensor
+- Handle MQTT connection and reconnection
+- Display structured logging output
+
+#### Environment Variables for Docker
+Configure in `.env` file:
+```bash
+# MQTT Configuration
+MQTT_HOST=mosquitto
+MQTT_PORT=1883
+
+# Edge Sensors Configuration  
+SENSOR_UPDATE_INTERVAL=2
+SENSOR_RECONNECT_ATTEMPTS=5
+SENSOR_RECONNECT_DELAY=5
+```
+
+### Local Development (Alternative)
+
+Install dependencies and run locally for development:
+```bash
+# Install dependencies
+pip install -r edge/sensors/requirements.txt
+
+# Set environment variables  
+export MQTT_HOST=localhost
+export MQTT_PORT=1883
+
+# Run temperature sensor
+python edge/sensors/temp_sensor.py
 ```
 
 ### Start Individual Sensors
