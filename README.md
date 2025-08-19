@@ -1,6 +1,5 @@
 # IoT Ecosystem - Environmental Monitoring Platform
-
-A complete, modular IoT environmental monitoring system implementing Edge-Fog-Cloud architecture with multiple protocols, real-time visualization, and intelligent anomaly detection.
+Uma plataforma IoT modular e completa para monitoramento ambiental implementando arquitetura Edge-Fog-Cloud com múltiplos protocolos, visualização em tempo real e detecção inteligente de anomalias.
 
 ## 🌟 Features
 
@@ -14,7 +13,7 @@ A complete, modular IoT environmental monitoring system implementing Edge-Fog-Cl
 - **Docker Deployment**: Complete containerized environment
 - **Comprehensive Testing**: Backend and sensor logic testing
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -42,20 +41,20 @@ A complete, modular IoT environmental monitoring system implementing Edge-Fog-Cl
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 Quick Start
+## 🚀 Início Rápido
 
-### Prerequisites
+### Pré-requisitos
 - Docker and Docker Compose
 - Python 3.11+ (for running sensors locally)
 - Git
 
-### 1. Clone Repository
+### 1. Clonar Repositório
 ```bash
 git clone https://github.com/LuisPassosRamos/IoT-Ecosystem.git
 cd IoT-Ecosystem
 ```
 
-### 2. Start Services
+### 2. Iniciar Serviços
 ```bash
 # Start all services with Docker Compose
 ./scripts/start-local.sh
@@ -64,12 +63,12 @@ cd IoT-Ecosystem
 docker-compose up --build -d
 ```
 
-### 3. Access Dashboard
+### 3. Acessar o Dashboard
 - **Frontend Dashboard**: http://localhost:8080
 - **Backend API**: http://localhost:8000/docs
 - **Node-RED**: http://localhost:1880
 
-### 4. Start Sensors
+### 4. Iniciar Sensores
 ```bash
 # Terminal 1: Temperature sensor
 cd edge/sensors
@@ -86,11 +85,11 @@ cd ../coap_simulator
 python coap_sensor.py
 ```
 
-### 5. Login to Dashboard
+### 5. Entrar no Dashboard
 - **Username**: `admin`
 - **Password**: `admin123`
 
-## 📋 Service URLs
+## 📋 URLs dos Serviços
 
 | Service | URL | Description |
 |---------|-----|-------------|
@@ -101,9 +100,9 @@ python coap_sensor.py
 | MQTT Broker | localhost:1883 | Message broker (internal) |
 | MQTT WebSocket | localhost:9001 | MQTT over WebSocket |
 
-## 🌡️ Sensor Data
+## 🌡️ Dados dos Sensores
 
-### MQTT Topics
+### Tópicos MQTT
 ```
 sensors/temperature/temp-001    # Temperature readings
 sensors/humidity/hum-001        # Humidity readings  
@@ -111,7 +110,7 @@ sensors/luminosity/lum-001      # Light level readings
 sensors/+/+                     # All sensor data
 ```
 
-### Payload Format
+### Formato de Payload
 ```json
 {
   "ts": "2024-01-01T12:00:00Z",
@@ -124,32 +123,32 @@ sensors/+/+                     # All sensor data
 }
 ```
 
-### CoAP Endpoints
+### Endpoints CoAP
 ```
 coap://localhost:5683/sensor      # Full environmental data
 coap://localhost:5683/temperature # Temperature only
 ```
 
-## 🔌 API Endpoints
+## 🔌 Endpoints da API
 
-### Authentication
+### Autenticação
 - `POST /v1/auth/login` - User authentication
 - `GET /v1/auth/me` - Current user info
 
-### Sensor Data
+### Dados dos Sensores
 - `GET /v1/sensors/latest` - Latest readings from all sensors
 - `GET /v1/sensors/history` - Historical sensor data
 - `GET /v1/sensors/anomalies` - Anomalous readings
 - `GET /v1/sensors/stats` - System statistics
 
-### Weather Integration
+### Integração com Clima
 - `GET /v1/sensors/external/weather` - OpenWeather API data
 - `GET /v1/sensors/compare/weather` - Compare sensors with weather
 
-### Real-time
+### Tempo Real
 - `WebSocket /ws` - Real-time sensor data stream
 
-## 🧪 Testing
+## 🧪 Testes
 
 ### Run Backend Tests
 ```bash
@@ -176,7 +175,7 @@ curl -X POST http://localhost:8000/v1/auth/login \
   -d '{"username": "admin", "password": "admin123"}'
 ```
 
-## 📊 Monitoring
+## 📊 Monitoramento
 
 ### MQTT Monitoring
 ```bash
@@ -201,7 +200,7 @@ docker-compose logs -f mosquitto
 docker-compose logs -f node-red
 ```
 
-### System Status
+### Status do Sistema
 ```bash
 # Check service health
 curl http://localhost:8000/health
@@ -213,9 +212,9 @@ curl http://localhost:8000/api/status
 docker-compose ps
 ```
 
-## 🛠️ Configuration
+## 🛠️ Configuração
 
-### Environment Variables
+### Variáveis de Ambiente
 Copy `.env.example` to `.env` and configure:
 
 ```bash
@@ -241,7 +240,7 @@ DEFAULT_CITY=London
 CORS_ORIGINS=*
 ```
 
-### Sensor Configuration
+### Configuração dos Sensores
 Edit sensor parameters in Python files:
 
 ```python
@@ -251,9 +250,9 @@ ANOMALY_THRESHOLD = 5.0      # °C jump
 UPDATE_INTERVAL = 2          # seconds
 ```
 
-## 🐳 Docker Services
+## 🐳 Serviços Docker
 
-### Service Composition
+### Composição dos Serviços
 ```yaml
 services:
   mosquitto:     # MQTT Broker
@@ -262,12 +261,12 @@ services:
   frontend:      # Web Dashboard
 ```
 
-### Data Persistence
+### Persistência de Dados
 - **Backend Data**: `./cloud-backend/data`
 - **Node-RED Data**: `./fog/node-red/data`
 - **Database**: SQLite file in backend data volume
 
-## 📚 Documentation
+## 📚 Documentação
 
 - **[Architecture](docs/architecture.md)**: System design and components
 - **[Protocols](docs/protocols_table.md)**: MQTT, HTTP, CoAP comparison
@@ -277,9 +276,9 @@ services:
 - **[Cloud README](cloud-backend/README.md)**: Backend API documentation
 - **[Frontend README](frontend/README.md)**: Dashboard features and customization
 
-## 🔧 Development
+## 🔧 Desenvolvimento
 
-### Local Development Setup
+### Configuração de Desenvolvimento Local
 ```bash
 # Install Python dependencies for sensors
 cd edge/sensors
@@ -293,20 +292,20 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Adding New Sensor Types
+### Adicionando Novos Tipos de Sensor
 1. Create sensor script in `edge/sensors/`
 2. Implement anomaly detection logic
 3. Configure MQTT publishing
 4. Add to Node-RED flows if needed
 5. Update frontend dashboard
 
-### Custom Protocol Integration
+### Integração de Protocolo Personalizado
 1. Add protocol client to edge layer
 2. Create Node-RED flow for protocol bridging
 3. Update backend to handle new data format
 4. Add frontend visualization
 
-## 🛡️ Security Features
+## 🛡️ Recursos de Segurança
 
 - **JWT Authentication**: Secure API access
 - **Input Validation**: Pydantic model validation
@@ -315,14 +314,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - **Anomaly Detection**: Intelligent threat detection
 - **Rate Limiting**: API abuse prevention
 
-## 🌍 Compliance
+## 🌍 Conformidade
 
 - **GDPR**: Data protection and privacy
 - **LGPD**: Brazilian data protection law
 - **Security Headers**: XSS, CSRF protection
 - **Audit Logging**: Security event logging
 
-## 🚫 Stop Services
+## 🚫 Parar Serviços
 
 ```bash
 # Stop all services
@@ -335,38 +334,38 @@ docker-compose down
 docker-compose down -v
 ```
 
-## 📈 Scaling Considerations
+## 📈 Considerações de Escala
 
-### Horizontal Scaling
+### Escalonamento Horizontal
 - Multiple sensor instances per type
 - Load-balanced API servers  
 - Database read replicas
 - Message broker clustering
 
-### Performance Optimization
+### Otimização de Desempenho
 - Configurable data retention
 - Connection pooling
 - Caching layers
 - Batch processing
 
-## 🤝 Contributing
+## 🤝 Contribuindo
 
 1. Fork the repository
 2. Create a feature branch
 3. Implement changes with tests
 4. Submit a pull request
 
-### Development Guidelines
+### Diretrizes de Desenvolvimento
 - Follow existing code style
 - Add tests for new features
 - Update documentation
 - Keep dependencies minimal
 
-## 📄 License
+## 📄 Licença
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🎯 Use Cases
+## 🎯 Casos de Uso
 
 - **Smart Buildings**: Temperature, humidity, light monitoring
 - **Industrial IoT**: Equipment monitoring and anomaly detection
@@ -374,7 +373,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Smart Agriculture**: Greenhouse and field monitoring
 - **Home Automation**: Smart home sensor integration
 
-## 🔮 Future Enhancements
+## 🔮 Melhorias Futuras
 
 - [ ] Machine learning anomaly detection
 - [ ] Time-series database integration (InfluxDB)
@@ -389,4 +388,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Happy Monitoring! 🚀**
 
+For questions or support, please open an issue or contact the development team.
 For questions or support, please open an issue or contact the development team.

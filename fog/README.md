@@ -1,46 +1,46 @@
-# Fog Layer - Protocol Bridging
+# Camada Fog - Ponte de Protocolos
 
-This directory contains the fog layer components that provide protocol bridging and data normalization between edge devices and the cloud.
+Este diretório contém os componentes da camada fog que fazem a ponte de protocolos e normalização de dados entre dispositivos de borda e a nuvem.
 
-## Components
+## Componentes
 
-### Node-RED Flows
-- **flows.json**: Pre-configured flows for protocol bridging
-- **CoAP to MQTT Bridge**: Polls CoAP sensors and publishes to MQTT
-- **HTTP to MQTT Bridge**: Accepts HTTP sensor data and forwards to MQTT
+### Fluxos Node-RED
+- **flows.json**: Fluxos pré-configurados para a ponte de protocolos
+- **Ponte CoAP para MQTT**: Polls CoAP sensors and publishes to MQTT
+- **Ponte HTTP para MQTT**: Accepts HTTP sensor data and forwards to MQTT
 
-### Gateway (Optional)
-- **gateway/**: Directory for additional gateway components if needed
+### Gateway (Opcional)
+- **gateway/**: Diretório para componentes adicionais de gateway, se necessário
 
-## Features
+## Recursos
 
-### Protocol Bridging
-- **CoAP → MQTT**: Converts CoAP sensor readings to MQTT messages
-- **HTTP → MQTT**: Accepts REST API calls and publishes to MQTT
-- **Data Normalization**: Ensures consistent payload format across protocols
+### Ponte de Protocolos
+- **CoAP → MQTT**: Converte leituras de sensores CoAP em mensagens MQTT
+- **HTTP → MQTT**: Aceita chamadas de API REST e publica em MQTT
+- **Normalização de Dados**: Garante formato de payload consistente entre protocolos
 
-### Node-RED Flows
-1. **CoAP Polling Flow**: Periodically requests data from CoAP sensors
-2. **HTTP Input Flow**: Accepts POST requests from HTTP sensors
-3. **Data Processing Flow**: Normalizes and validates sensor data
-4. **MQTT Publishing Flow**: Publishes formatted data to MQTT topics
+### Fluxos Node-RED
+1. **Fluxo de Polling CoAP**: Solicita periodicamente dados de sensores CoAP
+2. **Fluxo de Entrada HTTP**: Aceita requisições POST de sensores HTTP
+3. **Fluxo de Processamento de Dados**: Normaliza e valida dados dos sensores
+4. **Fluxo de Publicação MQTT**: Publica dados formatados em tópicos MQTT
 
-## Setup
+## Configuração
 
-### Node-RED Access
+### Acesso ao Node-RED
 - **URL**: http://localhost:1880
-- **Username**: (none - open access for development)
-- **Flows**: Auto-imported from flows.json
+- **Usuário**: (nenhum - acesso aberto para desenvolvimento)
+- **Fluxos**: Importados automaticamente do flows.json
 
-### Import Flows
-1. Open Node-RED at http://localhost:1880
-2. Go to Menu → Import
-3. Copy contents of `flows.json`
-4. Click Import
+### Importar Fluxos
+1. Abra o Node-RED em http://localhost:1880
+2. Vá para Menu → Importar
+3. Copie o conteúdo de `flows.json`
+4. Clique em Importar
 
-## Flow Descriptions
+## Descrição dos Fluxos
 
-### CoAP to MQTT Bridge Flow
+### Fluxo CoAP para MQTT
 
 ```
 [Inject Timer] → [CoAP Request] → [Parse JSON] → [Normalize Data] → [MQTT Publish]
@@ -49,12 +49,12 @@ This directory contains the fog layer components that provide protocol bridging 
                                               MQTT topic    sensors/{type}/{id}
 ```
 
-**Configuration**:
-- **Timer**: 5-second intervals
+**Configuração**:
+- **Timer**: Intervalos de 5 segundos
 - **CoAP URL**: `coap://host.docker.internal:5683/sensor`
-- **Output**: Multiple MQTT messages for each measurement
+- **Saída**: Múltiplas mensagens MQTT para cada medição
 
-### HTTP to MQTT Bridge Flow
+### Fluxo HTTP para MQTT
 
 ```
 [HTTP Input] → [Validate Data] → [Format Message] → [MQTT Publish] → [HTTP Response]
@@ -68,11 +68,11 @@ POST /sensors/   Check required    Add metadata    Publish to      Return 200 OK
 - `POST /sensors/humidity/{id}`
 - `POST /sensors/luminosity/{id}`
 
-## Data Flow
+## Fluxo de Dados
 
-### Input Formats
+### Formatos de Entrada
 
-#### CoAP Response
+#### Resposta CoAP
 ```json
 {
   "sensor_id": "coap-env-001",
@@ -87,7 +87,7 @@ POST /sensors/   Check required    Add metadata    Publish to      Return 200 OK
 }
 ```
 
-#### HTTP Request
+#### Requisição HTTP
 ```bash
 POST /sensors/temperature/temp-002
 Content-Type: application/json
@@ -99,7 +99,7 @@ Content-Type: application/json
 }
 ```
 
-### Output Format (MQTT)
+### Formato de Saída (MQTT)
 ```json
 {
   "ts": "2024-01-01T12:00:00Z",
@@ -112,22 +112,22 @@ Content-Type: application/json
 }
 ```
 
-## Testing
+## Testes
 
-### Test CoAP Bridge
+### Testar Ponte CoAP
 ```bash
-# Start CoAP sensor
+# Iniciar sensor CoAP
 cd ../edge/coap_simulator
 python coap_sensor.py
 
-# Check Node-RED debug output for CoAP data
-# Monitor MQTT for bridged messages
+# Verificar saída de depuração do Node-RED para dados CoAP
+# Monitorar MQTT para mensagens ponteadas
 mosquitto_sub -h localhost -t "sensors/+/coap-env-001-+"
 ```
 
-### Test HTTP Bridge
+### Testar Ponte HTTP
 ```bash
-# Send HTTP sensor data
+# Enviar dados de sensor HTTP
 curl -X POST "http://localhost:1880/sensors/temperature/temp-http-001" \
   -H "Content-Type: application/json" \
   -d '{
@@ -136,39 +136,39 @@ curl -X POST "http://localhost:1880/sensors/temperature/temp-http-001" \
     "timestamp": "2024-01-01T12:00:00Z"
   }'
 
-# Monitor MQTT for bridged messages
+# Monitorar MQTT para mensagens ponteadas
 mosquitto_sub -h localhost -t "sensors/temperature/temp-http-001"
 ```
 
-### Debug in Node-RED
-1. Open Node-RED UI at http://localhost:1880
-2. Enable debug nodes in flows
-3. View debug messages in the right panel
-4. Monitor data flow through each step
+### Depuração no Node-RED
+1. Abra a interface do Node-RED em http://localhost:1880
+2. Ative os nós de depuração nos fluxos
+3. Veja as mensagens de depuração no painel direito
+4. Monitore o fluxo de dados em cada etapa
 
-## Customization
+## Customização
 
-### Add New Protocol Support
-1. Create new flow in Node-RED
-2. Add input node for the protocol (e.g., UDP, Serial)
-3. Add data parsing and normalization logic
-4. Connect to MQTT output node
+### Adicionar Suporte a Novo Protocolo
+1. Crie um novo fluxo no Node-RED
+2. Adicione um nó de entrada para o protocolo (por exemplo, UDP, Serial)
+3. Adicione lógica de análise e normalização de dados
+4. Conecte ao nó de saída MQTT
 
-### Modify Data Processing
-1. Edit the "Normalize Data" function nodes
-2. Add validation logic
-3. Implement custom transformations
-4. Add error handling
+### Modificar Processamento de Dados
+1. Edite os nós de função "Normalize Data"
+2. Adicione lógica de validação
+3. Implemente transformações personalizadas
+4. Adicione tratamento de erros
 
-### Configure MQTT Settings
-1. Edit MQTT broker node settings
-2. Update connection parameters
-3. Configure QoS and retention policies
-4. Set up authentication if needed
+### Configurar MQTT
+1. Edite as configurações do nó do broker MQTT
+2. Atualize os parâmetros de conexão
+3. Configure QoS e políticas de retenção
+4. Configure autenticação, se necessário
 
-## Flow Configuration
+## Configuração dos Fluxos
 
-### MQTT Broker Node
+### Nó Broker MQTT
 ```javascript
 {
   "broker": "mosquitto",
@@ -179,18 +179,18 @@ mosquitto_sub -h localhost -t "sensors/temperature/temp-http-001"
 }
 ```
 
-### CoAP Request Function
+### Função de Requisição CoAP
 ```javascript
-// CoAP request to environmental sensor
+// Requisição CoAP para sensor ambiental
 const coapUrl = "coap://host.docker.internal:5683/sensor";
 msg.url = coapUrl;
 msg.method = "GET";
 return msg;
 ```
 
-### Data Normalization Function
+### Função de Normalização de Dados
 ```javascript
-// Convert CoAP data to MQTT sensor format
+// Converter dados CoAP para formato de sensor MQTT
 const coapData = msg.payload;
 const messages = [];
 
@@ -214,77 +214,77 @@ for (const [measureType, measurement] of Object.entries(coapData.measurements)) 
 return messages;
 ```
 
-## Monitoring
+## Monitoramento
 
-### Node-RED Dashboard
-- **Flow Status**: Visual indication of active flows
-- **Debug Output**: Real-time message inspection
-- **Error Handling**: Failed message notifications
+### Dashboard do Node-RED
+- **Status do Fluxo**: Indicação visual dos fluxos ativos
+- **Saída de Depuração**: Inspeção em tempo real das mensagens
+- **Tratamento de Erros**: Notificações de mensagens com falha
 
-### MQTT Monitoring
+### Monitoramento MQTT
 ```bash
-# Monitor all bridged messages
+# Monitorar todas as mensagens ponteadas
 mosquitto_sub -h localhost -t "sensors/+/+" | grep '"origin":"fog"'
 
-# Monitor specific protocol sources
+# Monitorar fontes de protocolo específicas
 mosquitto_sub -h localhost -t "sensors/+/+" | grep '"source_protocol":"coap"'
 ```
 
-### System Health
+### Saúde do Sistema
 ```bash
-# Check Node-RED container status
+# Verificar status do container Node-RED
 docker-compose ps node-red
 
-# View Node-RED logs
+# Ver visualizar logs do Node-RED
 docker-compose logs -f node-red
 
-# Check MQTT broker connectivity
+# Verificar conectividade do broker MQTT
 mosquitto_pub -h localhost -t "test/nodered" -m "ping"
 ```
 
-## Troubleshooting
+## Solução de Problemas
 
-### CoAP Bridge Issues
-1. **CoAP sensor not responding**:
-   - Check if CoAP sensor is running
-   - Verify network connectivity
-   - Check firewall settings for UDP port 5683
+### Problemas na Ponte CoAP
+1. **Sensor CoAP não respondendo**:
+   - Verifique se o sensor CoAP está em execução
+   - Verifique a conectividade da rede
+   - Verifique as configurações do firewall para a porta UDP 5683
 
-2. **No MQTT output**:
-   - Verify MQTT broker connection
-   - Check function node for errors
-   - Enable debug output
+2. **Sem saída MQTT**:
+   - Verifique a conexão com o broker MQTT
+   - Verifique se há erros no nó da função
+   - Ative a saída de depuração
 
-### HTTP Bridge Issues
-1. **HTTP requests failing**:
-   - Check Node-RED HTTP input node configuration
-   - Verify request format matches expected schema
-   - Check response status in debug panel
+### Problemas na Ponte HTTP
+1. **Falha nas requisições HTTP**:
+   - Verifique a configuração do nó de entrada HTTP do Node-RED
+   - Verifique se o formato da requisição corresponde ao esquema esperado
+   - Verifique o status da resposta no painel de depuração
 
-2. **Data not normalized**:
-   - Review normalization function logic
-   - Check for JavaScript errors in function nodes
-   - Validate input data format
+2. **Dados não normalizados**:
+   - Revise a lógica da função de normalização
+   - Verifique se há erros de JavaScript nos nós de função
+   - Valide o formato dos dados de entrada
 
-### General Issues
-1. **Flows not working**:
-   - Re-import flows.json
-   - Check all nodes are properly connected
-   - Verify MQTT broker configuration
+### Problemas Gerais
+1. **Fluxos não funcionando**:
+   - Reimporte o flows.json
+   - Verifique se todos os nós estão devidamente conectados
+   - Verifique a configuração do broker MQTT
 
-2. **Performance issues**:
-   - Adjust polling intervals
-   - Check system resources
-   - Monitor Node-RED memory usage
+2. **Problemas de desempenho**:
+   - Ajuste os intervalos de polling
+   - Verifique os recursos do sistema
+   - Monitore o uso de memória do Node-RED
 
-## Integration
+## Integração
 
-### With Edge Layer
-- Automatically receives data from CoAP sensors
-- Accepts HTTP POST requests from sensors
-- Bridges protocols transparently
+### Com a Camada de Borda
+- Recebe automaticamente dados de sensores CoAP
+- Aceita requisições POST HTTP de sensores
+- Faz a ponte entre protocolos de forma transparente
 
-### With Cloud Layer
-- Publishes normalized data to MQTT topics
-- Cloud backend subscribes to these topics
-- Provides consistent data format for processing
+### Com a Camada de Nuvem
+- Publica dados normalizados em tópicos MQTT
+- Backend da nuvem se inscreve nesses tópicos
+- Fornece formato de dados consistente para processamento

@@ -1,69 +1,69 @@
-# Frontend Dashboard
+# Painel Frontend
 
-This directory contains the web-based dashboard for visualizing IoT sensor data in real-time.
+Este diretório contém o dashboard web para visualizar dados de sensores IoT em tempo real.
 
-## Components
+## Componentes
 
-### Core Files
+### Arquivos Centrais
 - **index.html**: Main dashboard page with responsive layout
 - **app.js**: JavaScript application logic and WebSocket handling
 - **charts/chart-utils.js**: Chart.js utilities and helper functions
 
-### Features
-- **Real-time Charts**: Live updating charts for temperature, humidity, and luminosity
-- **WebSocket Integration**: Real-time data streaming from backend
-- **Weather Comparison**: Compare local sensors with external weather data
-- **Anomaly Alerts**: Visual alerts for sensor anomalies
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **System Status**: Monitor MQTT, backend, and sensor health
+### Recursos
+- **Gráficos em Tempo Real**: Live updating charts for temperature, humidity, and luminosity
+- **Integração WebSocket**: Real-time data streaming from backend
+- **Comparação com Clima**: Compare local sensors with external weather data
+- **Alertas de Anomalia**: Visual alerts for sensor anomalies
+- **Design Responsivo**: Works on desktop, tablet, and mobile devices
+- **Status do Sistema**: Monitor MQTT, backend, and sensor health
 
-## Technology Stack
+## Stack de Tecnologia
 
-### Frontend Libraries
+### Bibliotecas Frontend
 - **Chart.js**: Real-time data visualization
 - **Bootstrap 5**: Responsive UI framework
 - **Font Awesome**: Icons and visual indicators
 - **Vanilla JavaScript**: No framework dependencies
 
-### Communication
+### Comunicação
 - **WebSocket**: Real-time data streaming
 - **REST API**: Historical data and configuration
 - **MQTT over WebSocket**: Direct MQTT browser client (optional)
 
-## Dashboard Layout
+## Layout do Dashboard
 
-### Header Section
-- **Title**: IoT Ecosystem Dashboard
-- **Connection Status**: Real-time connection indicator
-- **Last Update**: Timestamp of most recent data
+### Seção de Cabeçalho
+- **Título**: IoT Ecosystem Dashboard
+- **Status da Conexão**: Real-time connection indicator
+- **Última Atualização**: Timestamp of most recent data
 
-### Status Cards
-- **Temperature**: Current reading, status, and sensor count
-- **Humidity**: Current reading, status, and sensor count  
-- **Luminosity**: Current reading, status, and sensor count
-- **Weather**: External weather data for comparison
+### Cards de Status
+- **Temperatura**: Current reading, status, and sensor count
+- **Umidade**: Current reading, status, and sensor count  
+- **Luminosidade**: Current reading, status, and sensor count
+- **Clima**: External weather data for comparison
 
-### Charts Section
-- **Temperature Chart**: Real-time line chart with 50 data points
-- **Humidity Chart**: Real-time line chart with 50 data points
-- **Luminosity Chart**: Real-time line chart with 50 data points
+### Seção de Gráficos
+- **Gráfico de Temperatura**: Real-time line chart with 50 data points
+- **Gráfico de Umidade**: Real-time line chart with 50 data points
+- **Gráfico de Luminosidade**: Real-time line chart with 50 data points
 
-### Alerts and Comparison
-- **Recent Alerts**: List of anomalies and system alerts
-- **Weather Comparison**: Side-by-side sensor vs weather data
+### Alertas e Comparação
+- **Alertas Recentes**: List of anomalies and system alerts
+- **Comparação com Clima**: Side-by-side sensor vs weather data
 
-### System Status
-- **MQTT Status**: Broker connection status
-- **Active Sensors**: Number of reporting sensors
-- **Total Readings**: Count of stored readings
-- **Anomaly Rate**: Percentage of anomalous readings
+### Status do Sistema
+- **Status do MQTT**: Broker connection status
+- **Sensores Ativos**: Number of reporting sensors
+- **Total de Leituras**: Count of stored readings
+- **Taxa de Anomalia**: Percentage of anomalous readings
 
 ## Setup
 
-### Static File Serving
-The frontend is served as static files through:
+### Servindo Arquivos Estáticos
+O frontend é servido como arquivos estáticos através de:
 
-1. **Nginx Container** (recommended):
+1. **Container Nginx** (recomendado):
    ```yaml
    # docker-compose.yml
    frontend:
@@ -74,26 +74,26 @@ The frontend is served as static files through:
        - ./frontend:/usr/share/nginx/html:ro
    ```
 
-2. **Backend Static Files** (alternative):
+2. **Arquivos Estáticos do Backend** (alternativa):
    ```python
    # In FastAPI main.py
    app.mount("/", StaticFiles(directory="frontend"), name="frontend")
    ```
 
-3. **Development Server** (local):
+3. **Servidor de Desenvolvimento** (local):
    ```bash
    cd frontend
    python -m http.server 8080
    ```
 
-### Access URLs
+### URLs de Acesso
 - **Dashboard**: http://localhost:8080
 - **Backend API**: http://localhost:8000
 - **Node-RED**: http://localhost:1880
 
-## Configuration
+## Configuração
 
-### Backend Connection
+### Conexão com Backend
 ```javascript
 // app.js configuration
 const config = {
@@ -105,7 +105,7 @@ const config = {
 };
 ```
 
-### Chart Settings
+### Configurações do Gráfico
 ```javascript
 // Chart.js configuration
 const chartConfig = {
@@ -128,9 +128,9 @@ const chartConfig = {
 };
 ```
 
-## Real-time Features
+## Recursos em Tempo Real
 
-### WebSocket Connection
+### Conexão WebSocket
 ```javascript
 class IoTDashboard {
     connectWebSocket() {
@@ -155,7 +155,7 @@ class IoTDashboard {
 }
 ```
 
-### Data Processing
+### Processamento de Dados
 ```javascript
 handleSensorDataMessage(data) {
     const { sensor_type, value, timestamp, anomaly } = data;
@@ -181,7 +181,7 @@ handleSensorDataMessage(data) {
 }
 ```
 
-### Chart Updates
+### Atualizações de Gráfico
 ```javascript
 // ChartUtils.addSingleDataPoint
 static addSingleDataPoint(chart, label, value, maxDataPoints = 50) {
@@ -198,9 +198,9 @@ static addSingleDataPoint(chart, label, value, maxDataPoints = 50) {
 }
 ```
 
-## Visual Features
+## Recursos Visuais
 
-### Status Indicators
+### Indicadores de Status
 ```css
 .status-indicator {
     width: 12px;
@@ -225,7 +225,7 @@ static addSingleDataPoint(chart, label, value, maxDataPoints = 50) {
 }
 ```
 
-### Anomaly Alerts
+### Alertas de Anomalia
 ```javascript
 createAnomalyAlert(reading) {
     const alertColor = reading.anomaly ? 'alert-danger' : 'alert-success';
@@ -243,7 +243,7 @@ createAnomalyAlert(reading) {
 }
 ```
 
-### Weather Comparison
+### Comparação com Clima
 ```javascript
 updateWeatherComparison(comparison) {
     const { weather, sensor, differences, alerts } = comparison;
@@ -251,17 +251,17 @@ updateWeatherComparison(comparison) {
     let html = `
         <div class="row">
             <div class="col-md-6">
-                <h6>Local Sensors</h6>
+                <h6>Sensor Local</h6>
                 <ul>
-                    <li>Temperature: ${sensor.temperature}°C</li>
-                    <li>Humidity: ${sensor.humidity}%</li>
+                    <li>Temperatura: ${sensor.temperature}°C</li>
+                    <li>Umidade: ${sensor.humidity}%</li>
                 </ul>
             </div>
             <div class="col-md-6">
-                <h6>Weather API</h6>
+                <h6>API de Clima</h6>
                 <ul>
-                    <li>Temperature: ${weather.temperature}°C</li>
-                    <li>Humidity: ${weather.humidity}%</li>
+                    <li>Temperatura: ${weather.temperature}°C</li>
+                    <li>Umidade: ${weather.humidity}%</li>
                 </ul>
             </div>
         </div>
@@ -281,29 +281,29 @@ updateWeatherComparison(comparison) {
 }
 ```
 
-## Data Display
+## Exibição de Dados
 
-### Sensor Cards
+### Cards de Sensor
 ```html
 <div class="card text-center">
     <div class="card-body">
         <i class="fas fa-thermometer-half fa-2x text-danger mb-2"></i>
-        <h5 class="card-title">Temperature</h5>
+        <h5 class="card-title">Temperatura</h5>
         <h3 class="text-primary" id="currentTemp">--°C</h3>
-        <small class="text-muted" id="tempStatus">Waiting for data...</small>
+        <small class="text-muted" id="tempStatus">Aguardando dados...</small>
     </div>
 </div>
 ```
 
-### Chart Containers
+### Containers de Gráfico
 ```html
 <div class="card sensor-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             <i class="fas fa-thermometer-half text-danger me-2"></i>
-            Temperature
+            Temperatura
         </h5>
-        <span class="badge bg-secondary" id="tempCount">0 readings</span>
+        <span class="badge bg-secondary" id="tempCount">0 leituras</span>
     </div>
     <div class="card-body">
         <div class="chart-container">
@@ -313,9 +313,9 @@ updateWeatherComparison(comparison) {
 </div>
 ```
 
-## API Integration
+## Integração com API
 
-### REST API Calls
+### Chamadas REST
 ```javascript
 async loadInitialData() {
     try {
@@ -337,7 +337,7 @@ async loadInitialData() {
 }
 ```
 
-### Error Handling
+### Tratamento de Erros
 ```javascript
 showError(title, message) {
     const alertHtml = `
@@ -353,15 +353,15 @@ showError(title, message) {
 }
 ```
 
-## Performance Optimization
+## Otimização de Desempenho
 
-### Efficient Updates
-- **Throttled WebSocket**: Limit update frequency to prevent UI flooding
-- **Chart Animation**: Disable animations for real-time updates
-- **Data Limits**: Cap chart data points to prevent memory issues
-- **Lazy Loading**: Load historical data only when needed
+### Atualizações Eficientes
+- **WebSocket com Limitação**: Limit update frequency to prevent UI flooding
+- **Desativar Animações de Gráfico**: Disable animations for real-time updates
+- **Limites de Dados**: Cap chart data points to prevent memory issues
+- **Carregamento Preguiçoso**: Load historical data only when needed
 
-### Memory Management
+### Gerenciamento de Memória
 ```javascript
 // Limit chart data points
 if (chart.data.labels.length > this.config.maxDataPoints) {
@@ -377,14 +377,14 @@ window.addEventListener('beforeunload', () => {
 });
 ```
 
-## Responsive Design
+## Design Responsivo
 
 ### Breakpoints
 - **Mobile**: < 768px (stacked layout)
 - **Tablet**: 768px - 1024px (2-column layout)
 - **Desktop**: > 1024px (3-column layout)
 
-### Mobile Optimizations
+### Otimizações para Mobile
 ```css
 @media (max-width: 767.98px) {
     .chart-container {
@@ -401,15 +401,15 @@ window.addEventListener('beforeunload', () => {
 }
 ```
 
-## Customization
+## Customização
 
-### Add New Chart Types
+### Adicionar Novos Tipos de Gráfico
 1. Create new chart in `initializeCharts()`
 2. Add chart container in HTML
 3. Handle data updates in WebSocket message handler
 4. Style chart according to sensor type
 
-### Modify Chart Appearance
+### Modificar Aparência do Gráfico
 ```javascript
 // Custom color schemes
 static getColorForSensorType(sensorType) {
@@ -424,15 +424,15 @@ static getColorForSensorType(sensorType) {
 }
 ```
 
-### Add New Widgets
+### Adicionar Novos Widgets
 1. Create HTML structure
 2. Add JavaScript logic in dashboard class
 3. Connect to WebSocket data stream
 4. Style with CSS
 
-## Troubleshooting
+## Solução de Problemas
 
-### Common Issues
+### Problemas Comuns
 1. **Charts not updating**:
    - Check WebSocket connection status
    - Verify backend is sending data
@@ -448,7 +448,7 @@ static getColorForSensorType(sensorType) {
    - Verify network connectivity
    - Check firewall settings
 
-### Debug Tools
+### Ferramentas de Debug
 ```javascript
 // Enable debug mode
 window.DEBUG = true;
@@ -471,7 +471,7 @@ window.fetch = function(...args) {
 };
 ```
 
-### Browser Console
+### Console do Navegador
 Use browser developer tools to:
 - Monitor network requests
 - Debug JavaScript errors

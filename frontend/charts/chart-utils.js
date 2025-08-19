@@ -1,5 +1,5 @@
 /**
- * Chart utility functions for IoT Dashboard
+ * Funções utilitárias para gráficos do Painel IoT
  */
 
 class ChartUtils {
@@ -28,9 +28,7 @@ class ChartUtils {
                     mode: 'index'
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
                         titleColor: 'white',
@@ -40,7 +38,7 @@ class ChartUtils {
                         displayColors: false,
                         callbacks: {
                             title: function(context) {
-                                return 'Time: ' + context[0].label;
+                                return 'Hora: ' + context[0].label;
                             },
                             label: function(context) {
                                 return label + ': ' + context.parsed.y;
@@ -53,13 +51,13 @@ class ChartUtils {
                         display: true,
                         title: {
                             display: true,
-                            text: 'Time'
+                            text: 'Tempo'
                         },
                         ticks: {
                             maxTicksLimit: 8,
-                            callback: function(value, index, values) {
-                                const label = this.getLabelForValue(value);
-                                return label.split(' ')[1]; // Show only time part
+                            callback: function(value) {
+                                const labelValue = this.getLabelForValue(value);
+                                return labelValue.split(' ')[1];
                             }
                         }
                     },
@@ -83,25 +81,25 @@ class ChartUtils {
     static updateChart(chart, newData, maxDataPoints = 50) {
         const { labels, data } = newData;
         
-        // Add new data
+        // Adiciona novos dados
         chart.data.labels.push(...labels);
         chart.data.datasets[0].data.push(...data);
         
-        // Remove old data if we exceed max points
+        // Remove dados antigos se exceder o número máximo de pontos
         if (chart.data.labels.length > maxDataPoints) {
             const excess = chart.data.labels.length - maxDataPoints;
             chart.data.labels.splice(0, excess);
             chart.data.datasets[0].data.splice(0, excess);
         }
         
-        chart.update('none'); // Update without animation for real-time feel
+        chart.update('none'); // Atualiza sem animação para uma sensação em tempo real
     }
 
     static addSingleDataPoint(chart, label, value, maxDataPoints = 50) {
         chart.data.labels.push(label);
         chart.data.datasets[0].data.push(value);
         
-        // Remove old data if we exceed max points
+        // Remove dados antigos se exceder o número máximo de pontos
         if (chart.data.labels.length > maxDataPoints) {
             chart.data.labels.shift();
             chart.data.datasets[0].data.shift();
@@ -112,7 +110,7 @@ class ChartUtils {
 
     static formatTimestamp(timestamp) {
         const date = new Date(timestamp);
-        return date.toLocaleTimeString('en-US', { 
+        return date.toLocaleTimeString('pt-BR', { 
             hour12: false,
             hour: '2-digit',
             minute: '2-digit',
@@ -122,8 +120,8 @@ class ChartUtils {
 
     static formatDate(timestamp) {
         const date = new Date(timestamp);
-        return date.toLocaleDateString('en-US') + ' ' + 
-               date.toLocaleTimeString('en-US', { hour12: false });
+        return date.toLocaleDateString('pt-BR') + ' ' + 
+               date.toLocaleTimeString('pt-BR', { hour12: false });
     }
 
     static getColorForSensorType(sensorType) {
@@ -140,17 +138,17 @@ class ChartUtils {
     static createAnomalyAlert(reading) {
         const alertColor = reading.anomaly ? 'alert-danger' : 'alert-success';
         const iconClass = reading.anomaly ? 'fa-exclamation-triangle' : 'fa-check-circle';
-        const status = reading.anomaly ? 'ANOMALY' : 'NORMAL';
+        const status = reading.anomaly ? 'ANOMALIA' : 'NORMAL';
         
         return `
             <div class="alert ${alertColor} alert-dismissible fade show" role="alert">
                 <i class="fas ${iconClass} me-2"></i>
                 <strong>${status}:</strong> 
-                ${reading.sensor_type} sensor (${reading.sensor_id}) 
-                reading: ${reading.value} ${reading.unit || ''}
+                ${reading.sensor_type} (${reading.sensor_id}) 
+                leitura: ${reading.value} ${reading.unit || ''}
                 <br>
                 <small class="text-muted">
-                    ${this.formatDate(reading.timestamp)} | Origin: ${reading.origin}
+                    ${this.formatDate(reading.timestamp)} | Origem: ${reading.origin}
                 </small>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -159,7 +157,7 @@ class ChartUtils {
 
     static createWeatherComparisonCard(comparison) {
         if (!comparison.weather || !comparison.sensor) {
-            return '<div class="text-muted">No comparison data available</div>';
+            return '<div class="text-muted">Nenhum dado de comparação disponível</div>';
         }
 
         const { weather, sensor, differences, alerts } = comparison;
@@ -177,7 +175,7 @@ class ChartUtils {
         return `
             <div class="row">
                 <div class="col-md-6">
-                    <h6 class="text-primary">Local Sensors</h6>
+                    <h6 class="text-primary">Sensores Locais</h6>
                     <ul class="list-unstyled">
                         ${sensor.temperature ? `<li><i class="fas fa-thermometer-half text-danger me-2"></i>${sensor.temperature}°C</li>` : ''}
                         ${sensor.humidity ? `<li><i class="fas fa-tint text-info me-2"></i>${sensor.humidity}%</li>` : ''}
@@ -185,7 +183,7 @@ class ChartUtils {
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h6 class="text-info">Weather API</h6>
+                    <h6 class="text-info">API de Clima</h6>
                     <ul class="list-unstyled">
                         <li><i class="fas fa-thermometer-half text-danger me-2"></i>${weather.temperature}°C</li>
                         <li><i class="fas fa-tint text-info me-2"></i>${weather.humidity}%</li>
@@ -194,14 +192,13 @@ class ChartUtils {
                 </div>
             </div>
             ${alertsHtml}
-            ${alerts.length === 0 ? '<div class="alert alert-success alert-sm"><i class="fas fa-check me-1"></i>All readings within normal range</div>' : ''}
+            ${alerts.length === 0 ? '<div class="alert alert-success alert-sm"><i class="fas fa-check me-1"></i>Todas as leituras dentro da faixa normal</div>' : ''}
         `;
     }
 
     static createSystemStatusIndicator(status, label) {
         const statusClass = status ? 'status-connected' : 'status-disconnected';
-        const statusText = status ? 'Connected' : 'Disconnected';
-        
+        const statusText = status ? 'Conectado' : 'Desconectado';
         return `
             <span class="status-indicator ${statusClass}"></span>
             ${label}: ${statusText}
@@ -259,7 +256,7 @@ class ChartUtils {
         return ageMinutes <= maxAgeMinutes;
     }
 
-    static createLoadingSpinner(text = 'Loading...') {
+    static createLoadingSpinner(text = 'Carregando...') {
         return `
             <div class="text-center text-muted p-3">
                 <div class="loading-spinner me-2"></div>
@@ -272,7 +269,7 @@ class ChartUtils {
         return `
             <div class="alert alert-danger" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
-                <strong>Error:</strong> ${message}
+                <strong>Erro:</strong> ${message}
                 ${details ? `<br><small>${details}</small>` : ''}
             </div>
         `;

@@ -1,30 +1,30 @@
-# Security and Data Protection
+# Segurança e Proteção de Dados
 
-## Overview
+## Visão Geral
 
-This document outlines the security measures implemented in the IoT Ecosystem and compliance considerations for data protection regulations.
+Este documento descreve as medidas de segurança implementadas no IoT Ecosystem e considerações de conformidade com regulações de proteção de dados.
 
-## Security Architecture
+## Arquitetura de Segurança
 
-### Defense in Depth
+### Defesa em Profundidade
 
-The IoT Ecosystem implements multiple layers of security:
+O Ecossistema IoT implementa múltiplas camadas de segurança:
 
-1. **Device Security** (Edge Layer)
-2. **Network Security** (Communication)
-3. **Application Security** (Fog/Cloud)
-4. **Data Security** (Storage/Transit)
-5. **Operational Security** (Monitoring/Response)
+1. **Segurança do Dispositivo** (Camada de Borda)
+2. **Segurança de Rede** (Comunicação)
+3. **Segurança de Aplicação** (Nuvem)
+4. **Segurança de Dados** (Armazenamento/Transito)
+5. **Segurança Operacional** (Monitoramento/Resposta)
 
-## Edge Layer Security
+## Segurança na Camada de Borda
 
-### Device Authentication
-- **Certificate-based Authentication**: X.509 certificates for device identity
-- **Pre-shared Keys (PSK)**: For resource-constrained devices
-- **Device Provisioning**: Secure onboarding process
+### Autenticação de Dispositivos
+- **Autenticação Baseada em Certificado**: Certificados X.509 para identidade do dispositivo
+- **Chaves Pré-compartilhadas (PSK)**: Para dispositivos com recursos limitados
+- **Provisionamento de Dispositivos**: Processo seguro de integração
 
 ```python
-# Example: MQTT client with TLS and certificates
+# Exemplo: Cliente MQTT com TLS e certificados
 import ssl
 import paho.mqtt.client as mqtt
 
@@ -38,23 +38,23 @@ client.tls_set_context(context)
 client.connect("mqtt.iot-ecosystem.local", 8883, 60)
 ```
 
-### Sensor Data Integrity
-- **Digital Signatures**: Cryptographic signing of sensor readings
-- **Anomaly Detection**: Statistical analysis to detect tampering
-- **Timestamping**: Secure time synchronization (NTP with authentication)
+### Integridade de Dados dos Sensores
+- **Assinaturas Digitais**: Assinatura criptográfica das leituras dos sensores
+- **Detecção de Anomalias**: Análise estatística para detectar adulterações
+- **Timestamping**: Sincronização segura de tempo (NTP com autenticação)
 
-### Device Management
-- **Firmware Updates**: Secure OTA updates with signature verification
-- **Configuration Management**: Encrypted configuration deployment
-- **Key Rotation**: Automated certificate and key lifecycle management
+### Gestão de Dispositivos
+- **Atualizações de Firmware**: Atualizações OTA seguras com verificação de assinatura
+- **Gestão de Configuração**: Implantação de configuração criptografada
+- **Rotação de Chaves**: Gestão automatizada do ciclo de vida de certificados e chaves
 
-## Network Security
+## Segurança de Rede
 
-### Transport Layer Security
+### Segurança na Camada de Transporte
 
-#### MQTT Security
+#### Segurança MQTT
 ```yaml
-# Mosquitto TLS Configuration
+# Configuração TLS do Mosquitto
 listener 8883
 protocol mqtt
 cafile /mosquitto/config/ca.crt
@@ -64,14 +64,14 @@ require_certificate true
 use_identity_as_username true
 ```
 
-#### HTTP/REST Security
-- **HTTPS Only**: TLS 1.3 encryption for all API communication
-- **HSTS Headers**: HTTP Strict Transport Security
-- **Certificate Pinning**: Pin certificates in mobile applications
+#### Segurança HTTP/REST
+- **Apenas HTTPS**: Criptografia TLS 1.3 para toda comunicação da API
+- **Cabeçalhos HSTS**: Segurança Estrita de Transporte HTTP
+- **Pinagem de Certificado**: Fixar certificados em aplicações móveis
 
-#### CoAP Security
+#### Segurança CoAP
 ```python
-# CoAP with DTLS
+# CoAP com DTLS
 import aiocoap
 from aiocoap.credentials import FilesystemCredentials
 
@@ -82,18 +82,18 @@ protocol = await aiocoap.Context.create_client_context(
 )
 ```
 
-### Network Segmentation
-- **VLANs**: Separate networks for IoT devices
-- **Firewall Rules**: Strict ingress/egress filtering
-- **VPN Access**: Secure remote access for management
+### Segmentação de Rede
+- **VLANs**: Redes separadas para dispositivos IoT
+- **Regras de Firewall**: Filtragem rigorosa de entrada/saída
+- **Acesso VPN**: Acesso remoto seguro para gestão
 
-## Application Security
+## Segurança de Aplicação
 
-### Authentication and Authorization
+### Autenticação e Autorização
 
-#### JWT Implementation
+#### Implementação JWT
 ```python
-# JWT Token Generation
+# Geração de Token JWT
 from jose import jwt
 from datetime import datetime, timedelta
 
@@ -103,7 +103,7 @@ def create_access_token(data: dict) -> str:
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
 
-# Usage in FastAPI
+# Uso no FastAPI
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 
@@ -114,12 +114,12 @@ def verify_token(credentials = Depends(security)):
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=["HS256"])
         return payload
     except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Token inválido")
 ```
 
-#### Role-Based Access Control (RBAC)
+#### Controle de Acesso Baseado em Papéis (RBAC)
 ```python
-# User roles and permissions
+# Papéis e permissões de usuário
 class UserRole(Enum):
     ADMIN = "admin"
     OPERATOR = "operator"  
@@ -136,7 +136,7 @@ def require_permission(permission: str):
         def wrapper(current_user: User = Depends(get_current_user)):
             user_permissions = PERMISSIONS.get(current_user.role, [])
             if permission not in user_permissions:
-                raise HTTPException(status_code=403, detail="Insufficient permissions")
+                raise HTTPException(status_code=403, detail="Permissões insuficientes")
             return func(current_user)
         return wrapper
     return decorator
@@ -144,13 +144,13 @@ def require_permission(permission: str):
 @app.get("/v1/sensors/config")
 @require_permission("configure")
 def get_sensor_config():
-    # Only admins can access sensor configuration
+    # Apenas administradores podem acessar a configuração do sensor
     pass
 ```
 
-### Input Validation and Sanitization
+### Validação e Saneamento de Entrada
 
-#### Pydantic Models
+#### Modelos Pydantic
 ```python
 from pydantic import BaseModel, validator, Field
 from typing import Optional
@@ -160,33 +160,33 @@ class SensorReading(BaseModel):
     timestamp: datetime
     sensor_type: str = Field(..., regex="^[a-z_]+$", max_length=50)
     sensor_id: str = Field(..., regex="^[a-zA-Z0-9_-]+$", max_length=100)
-    value: float = Field(..., ge=-100, le=1000)  # Reasonable sensor ranges
+    value: float = Field(..., ge=-100, le=1000)  # Faixas de sensor razoáveis
     unit: Optional[str] = Field(None, max_length=20)
     
     @validator('sensor_type')
     def validate_sensor_type(cls, v):
         allowed_types = ['temperature', 'humidity', 'luminosity', 'pressure']
         if v not in allowed_types:
-            raise ValueError(f'sensor_type must be one of {allowed_types}')
+            raise ValueError(f'tipo_sensor deve ser um dos seguintes: {allowed_types}')
         return v
 
     @validator('value')
     def validate_sensor_value(cls, v, values):
         sensor_type = values.get('sensor_type')
-        # Type-specific validation
+        # Validação específica do tipo
         if sensor_type == 'temperature' and not (-50 <= v <= 100):
-            raise ValueError('Temperature must be between -50°C and 100°C')
+            raise ValueError('A temperatura deve estar entre -50°C e 100°C')
         elif sensor_type == 'humidity' and not (0 <= v <= 100):
-            raise ValueError('Humidity must be between 0% and 100%')
+            raise ValueError('A umidade deve estar entre 0% e 100%')
         return v
 ```
 
-### API Security Headers
+### Cabeçalhos de Segurança na API
 ```python
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
-# Security middleware
+# Middleware de segurança
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["iot-ecosystem.local", "*.iot-ecosystem.local"])
 app.add_middleware(HTTPSRedirectMiddleware)
 
@@ -201,13 +201,13 @@ async def add_security_headers(request: Request, call_next):
     return response
 ```
 
-## Data Security
+## Segurança de Dados
 
-### Data Encryption
+### Criptografia de Dados
 
-#### Database Encryption
+#### Criptografia de Banco de Dados
 ```python
-# SQLAlchemy with encrypted fields
+# SQLAlchemy com campos criptografados
 from sqlalchemy_utils import EncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
@@ -216,20 +216,20 @@ class SensorReading(Base):
     
     id = Column(Integer, primary_key=True)
     sensor_id = Column(String(100))
-    # Encrypt sensitive location data
+    # Criptografar dados sensíveis de localização
     location = Column(EncryptedType(String, secret_key, AesEngine, 'pkcs5'))
     value = Column(Float)
     raw_data = Column(EncryptedType(Text, secret_key, AesEngine, 'pkcs5'))
 ```
 
-#### Transit Encryption
-- **TLS 1.3**: All HTTP/MQTT communications
-- **DTLS 1.3**: CoAP communications
-- **End-to-End Encryption**: Optional payload encryption for sensitive data
+#### Criptografia em Trânsito
+- **TLS 1.3**: Todas as comunicações HTTP/MQTT
+- **DTLS 1.3**: Comunicações CoAP
+- **Criptografia de Ponta a Ponta**: Criptografia opcional de payload para dados sensíveis
 
-### Data Minimization
+### Minimização de Dados
 ```python
-# Data retention policies
+# Políticas de retenção de dados
 class DataRetentionPolicy:
     REAL_TIME_RETENTION = timedelta(hours=1)
     DETAILED_RETENTION = timedelta(days=30)
@@ -237,26 +237,26 @@ class DataRetentionPolicy:
     
     @staticmethod
     def cleanup_old_data():
-        # Delete real-time data older than 1 hour
+        # Excluir dados em tempo real com mais de 1 hora
         cutoff = datetime.utcnow() - DataRetentionPolicy.REAL_TIME_RETENTION
         db.query(SensorReading).filter(
             SensorReading.timestamp < cutoff,
             SensorReading.retention_type == "realtime"
         ).delete()
         
-        # Aggregate detailed data to summaries after 30 days
-        # ... implementation
+        # Agregar dados detalhados em resumos após 30 dias
+        # ... implementação
 ```
 
-## Privacy Protection
+## Proteção de Privacidade
 
-### Data Anonymization
+### Anonimização de Dados
 ```python
 import hashlib
 import hmac
 
 def anonymize_sensor_id(sensor_id: str, salt: str) -> str:
-    """Create anonymous but consistent sensor identifier"""
+    """Criar identificador de sensor anônimo, mas consistente"""
     return hmac.new(
         salt.encode(), 
         sensor_id.encode(), 
@@ -264,11 +264,11 @@ def anonymize_sensor_id(sensor_id: str, salt: str) -> str:
     ).hexdigest()[:16]
 
 def pseudonymize_location(lat: float, lon: float, precision: int = 3) -> tuple:
-    """Reduce location precision to protect privacy"""
+    """Reduzir a precisão da localização para proteger a privacidade"""
     return (round(lat, precision), round(lon, precision))
 ```
 
-### Consent Management
+### Gestão de Consentimento
 ```python
 class ConsentManager:
     @staticmethod
@@ -293,16 +293,16 @@ class ConsentManager:
         return consent and consent.granted
 ```
 
-## Regulatory Compliance
+## Conformidade Regulatória
 
-### GDPR (General Data Protection Regulation)
+### GDPR (Regulamento Geral de Proteção de Dados)
 
-#### Data Subject Rights Implementation
+#### Implementação dos Direitos do Titular
 ```python
 class GDPRCompliance:
     @staticmethod
     def export_user_data(user_id: str) -> dict:
-        """Right to data portability (Art. 20)"""
+        """Direito à portabilidade dos dados (Art. 20)"""
         user_data = {
             "user_info": db.query(User).filter(User.id == user_id).first(),
             "sensor_readings": db.query(SensorReading).filter(
@@ -316,10 +316,10 @@ class GDPRCompliance:
     
     @staticmethod
     def delete_user_data(user_id: str):
-        """Right to erasure (Art. 17)"""
-        # Delete personal data
+        """Direito ao apagamento (Art. 17)"""
+        # Excluir dados pessoais
         db.query(User).filter(User.id == user_id).delete()
-        # Anonymize sensor data instead of deleting (legitimate interest)
+        # Anonimizar dados do sensor em vez de excluir (interesse legítimo)
         db.query(SensorReading).filter(
             SensorReading.user_id == user_id
         ).update({"user_id": None, "anonymized": True})
@@ -327,7 +327,7 @@ class GDPRCompliance:
     
     @staticmethod
     def rectify_user_data(user_id: str, corrections: dict):
-        """Right to rectification (Art. 16)"""
+        """Direito à retificação (Art. 16)"""
         user = db.query(User).filter(User.id == user_id).first()
         for field, value in corrections.items():
             if hasattr(user, field):
@@ -335,7 +335,7 @@ class GDPRCompliance:
         db.commit()
 ```
 
-#### Legal Basis Documentation
+#### Documentação da Base Legal
 ```python
 class LegalBasis:
     CONSENT = "consent"  # Art. 6(1)(a)
@@ -353,32 +353,32 @@ class DataProcessingRecord:
         self.retention_period = self.calculate_retention()
         
     def calculate_retention(self):
-        # Define retention periods based on legal basis and purpose
+        # Definir períodos de retenção com base na base legal e propósito
         pass
 
-# Record of processing activities (Art. 30)
+# Registro de atividades de processamento (Art. 30)
 PROCESSING_ACTIVITIES = [
     DataProcessingRecord(
-        purpose="Environmental monitoring",
+        purpose="Monitoramento ambiental",
         legal_basis=LegalBasis.LEGITIMATE_INTERESTS,
         data_categories=["sensor_readings", "device_identifiers"]
     ),
     DataProcessingRecord(
-        purpose="User authentication",
+        purpose="Autenticação de usuário",
         legal_basis=LegalBasis.CONTRACT,
         data_categories=["user_credentials", "session_data"]
     )
 ]
 ```
 
-### LGPD (Lei Geral de Proteção de Dados - Brazil)
+### LGPD (Lei Geral de Proteção de Dados - Brasil)
 
-#### Data Controller Responsibilities
+#### Responsabilidades do Controlador de Dados
 ```python
 class LGPDCompliance:
     @staticmethod
     def generate_privacy_report() -> dict:
-        """Generate regular privacy impact assessments"""
+        """Gerar avaliações de impacto à privacidade regularmente"""
         return {
             "data_types_processed": ["environmental_sensors", "user_auth"],
             "processing_purposes": ["monitoring", "analytics", "alerts"],
@@ -390,7 +390,7 @@ class LGPDCompliance:
     
     @staticmethod
     def incident_response(incident_type: str, affected_users: list):
-        """Data breach notification (Art. 48)"""
+        """Notificação de violação de dados (Art. 48)"""
         incident = DataBreachIncident(
             type=incident_type,
             affected_users=len(affected_users),
@@ -399,25 +399,25 @@ class LGPDCompliance:
             timestamp=datetime.utcnow()
         )
         
-        # Notify authorities within 72 hours if high risk
+        # Notificar autoridades dentro de 72 horas se alto risco
         if incident.severity == "high":
-            # Implementation for authority notification
+            # Implementação para notificação à autoridade
             pass
         
-        # Notify affected users without undue delay
+        # Notificar usuários afetados sem demora indevida
         for user_id in affected_users:
-            # Implementation for user notification
+            # Implementação para notificação ao usuário
             pass
 ```
 
-## Security Monitoring
+## Monitoramento de Segurança
 
-### Audit Logging
+### Auditoria de Logs
 ```python
 import logging
 from functools import wraps
 
-# Security event logger
+# Logger de eventos de segurança
 security_logger = logging.getLogger("security")
 security_handler = logging.FileHandler("security.log")
 security_handler.setFormatter(logging.Formatter(
@@ -430,18 +430,18 @@ def audit_log(action: str):
         @wraps(func)
         def wrapper(*args, **kwargs):
             user = kwargs.get('current_user') or 'anonymous'
-            security_logger.info(f"ACTION: {action} | USER: {user.username if hasattr(user, 'username') else user} | IP: {request.client.host}")
+            security_logger.info(f"AÇÃO: {action} | USUÁRIO: {user.username if hasattr(user, 'username') else user} | IP: {request.client.host}")
             return func(*args, **kwargs)
         return wrapper
     return decorator
 
 @app.post("/v1/sensors/config")
-@audit_log("sensor_config_update")
+@audit_log("atualização_config_sensor")
 def update_sensor_config():
     pass
 ```
 
-### Intrusion Detection
+### Detecção de Intrusão
 ```python
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -452,18 +452,18 @@ class IntrusionDetection:
         self.rate_limits = defaultdict(deque)
     
     def check_brute_force(self, ip_address: str) -> bool:
-        """Detect brute force attacks"""
+        """Detectar ataques de força bruta"""
         now = datetime.utcnow()
         window = now - timedelta(minutes=15)
         
-        # Clean old attempts
+        # Limpar tentativas antigas
         attempts = self.failed_attempts[ip_address]
         while attempts and attempts[0] < window:
             attempts.popleft()
         
-        # Check if too many failed attempts
+        # Verificar se muitas tentativas falhadas
         if len(attempts) >= 5:
-            security_logger.warning(f"BRUTE_FORCE_DETECTED: {ip_address}")
+            security_logger.warning(f"FORCA_BRUTA_DETECTADA: {ip_address}")
             return True
         return False
     
@@ -471,7 +471,7 @@ class IntrusionDetection:
         self.failed_attempts[ip_address].append(datetime.utcnow())
     
     def check_rate_limit(self, ip_address: str, limit: int = 100) -> bool:
-        """Check API rate limiting"""
+        """Verificar limite de taxa da API"""
         now = datetime.utcnow()
         window = now - timedelta(minutes=1)
         
@@ -491,73 +491,73 @@ intrusion_detector = IntrusionDetection()
 async def security_middleware(request: Request, call_next):
     ip_address = request.client.host
     
-    # Check rate limiting
+    # Verificar limite de taxa
     if intrusion_detector.check_rate_limit(ip_address):
         return JSONResponse(
             status_code=429,
-            content={"detail": "Rate limit exceeded"}
+            content={"detail": "Limite de taxa excedido"}
         )
     
     response = await call_next(request)
     
-    # Record failed auth attempts
+    # Registrar tentativas de autenticação falhadas
     if response.status_code == 401:
         intrusion_detector.record_failed_attempt(ip_address)
         
         if intrusion_detector.check_brute_force(ip_address):
-            # Could implement IP blocking here
+            # Poderia implementar bloqueio de IP aqui
             pass
     
     return response
 ```
 
-## Incident Response Plan
+## Plano de Resposta a Incidentes
 
-### Security Incident Classification
-1. **Low**: Minor configuration issues, failed login attempts
-2. **Medium**: Unauthorized access attempts, service disruptions
-3. **High**: Data breaches, system compromises
-4. **Critical**: Complete system compromise, large-scale data theft
+### Classificação de Incidentes de Segurança
+1. **Baixo**: Problemas de configuração menores, tentativas de login falhadas
+2. **Médio**: Tentativas de acesso não autorizadas, interrupções de serviço
+3. **Alto**: Violação de dados, compromissos de sistema
+4. **Crítico**: Compromisso completo do sistema, roubo de dados em larga escala
 
-### Response Procedures
-1. **Detection**: Automated monitoring alerts
-2. **Assessment**: Severity classification and impact analysis
-3. **Containment**: Isolate affected systems
-4. **Eradication**: Remove threat and vulnerabilities
-5. **Recovery**: Restore services and monitor
-6. **Lessons Learned**: Update security measures
+### Procedimentos de Resposta
+1. **Detecção**: Alertas de monitoramento automático
+2. **Avaliação**: Classificação de severidade e análise de impacto
+3. **Contenção**: Isolar sistemas afetados
+4. **Erradicação**: Remover ameaças e vulnerabilidades
+5. **Recuperação**: Restaurar serviços e monitorar
+6. **Lições Aprendidas**: Atualizar medidas de segurança
 
-### Contact Information
-- **Security Team**: security@iot-ecosystem.local
-- **Data Protection Officer**: dpo@iot-ecosystem.local
-- **Emergency Hotline**: +1-555-SECURITY
+### Informações de Contato
+- **Equipe de Segurança**: security@iot-ecosystem.local
+- **Encarregado de Proteção de Dados**: dpo@iot-ecosystem.local
+- **Linha Direta de Emergência**: +1-555-SECURITY
 
-## Security Testing
+## Testes de Segurança
 
-### Automated Security Testing
+### Testes Automatizados de Segurança
 ```yaml
-# Security testing in CI/CD pipeline
+# Testes de segurança na pipeline CI/CD
 security_tests:
-  - name: "SAST Scan"
+  - name: "Varredura SAST"
     tool: "bandit"
     command: "bandit -r cloud-backend/ -f json"
   
-  - name: "Dependency Scan"
+  - name: "Varredura de Dependências"
     tool: "safety"
     command: "safety check --json"
   
-  - name: "Container Scan"
+  - name: "Varredura de Container"
     tool: "trivy"
     command: "trivy image iot-backend:latest"
   
-  - name: "API Security Test"
+  - name: "Teste de Segurança da API"
     tool: "zap"
     command: "zap-baseline.py -t http://localhost:8000"
 ```
 
-### Penetration Testing Schedule
-- **Internal Testing**: Monthly automated scans
-- **External Testing**: Quarterly professional assessment
-- **Red Team Exercises**: Annual comprehensive testing
+### Agenda de Testes de Intrusão
+- **Testes Internos**: Varreduras automatizadas mensais
+- **Testes Externos**: Avaliação profissional trimestral
+- **Exercícios de Red Team**: Teste abrangente anual
 
-This security framework ensures the IoT Ecosystem maintains strong protection for sensor data and user privacy while complying with major data protection regulations.
+Este framework de segurança assegura que o IoT Ecosystem mantenha forte proteção para dados de sensores e privacidade dos usuários, em conformidade com as principais regulações de proteção de dados.

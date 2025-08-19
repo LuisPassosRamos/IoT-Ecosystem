@@ -33,7 +33,7 @@ class IoTDashboard {
     }
 
     async init() {
-        console.log('Initializing IoT Dashboard...');
+        console.log('Inicializando Painel IoT...');
         
         // Initialize charts
         this.initializeCharts();
@@ -50,7 +50,7 @@ class IoTDashboard {
         // Load weather comparison
         this.loadWeatherComparison();
         
-        console.log('Dashboard initialized successfully');
+        console.log('Dashboard inicializado com sucesso');
     }
 
     initializeCharts() {
@@ -58,7 +58,7 @@ class IoTDashboard {
         const tempCtx = document.getElementById('temperatureChart').getContext('2d');
         this.charts.temperature = ChartUtils.createLineChart(
             tempCtx, 
-            'Temperature (°C)', 
+            'Temperatura (°C)', 
             ChartUtils.getColorForSensorType('temperature'),
             this.config.maxDataPoints
         );
@@ -67,7 +67,7 @@ class IoTDashboard {
         const humCtx = document.getElementById('humidityChart').getContext('2d');
         this.charts.humidity = ChartUtils.createLineChart(
             humCtx, 
-            'Humidity (%)', 
+            'Umidade (%)', 
             ChartUtils.getColorForSensorType('humidity'),
             this.config.maxDataPoints
         );
@@ -76,17 +76,17 @@ class IoTDashboard {
         const lumCtx = document.getElementById('luminosityChart').getContext('2d');
         this.charts.luminosity = ChartUtils.createLineChart(
             lumCtx, 
-            'Luminosity (lux)', 
+            'Luminosidade (lux)', 
             ChartUtils.getColorForSensorType('luminosity'),
             this.config.maxDataPoints
         );
 
-        console.log('Charts initialized');
+        console.log('Gráficos inicializados');
     }
 
     async loadInitialData() {
         try {
-            console.log('Loading initial sensor data...');
+            console.log('Carregando dados iniciais dos sensores...');
             
             // Load latest sensor readings
             const response = await fetch(`${this.config.backendUrl}/v1/sensors/latest`);
@@ -103,11 +103,11 @@ class IoTDashboard {
             // Load system stats
             await this.loadSystemStats();
             
-            console.log('Initial data loaded successfully');
+            console.log('Dados iniciais carregados com sucesso');
             
         } catch (error) {
-            console.error('Error loading initial data:', error);
-            this.showError('Failed to load initial data', error.message);
+            console.error('Erro ao carregar dados iniciais:', error);
+            this.showError('Falha ao carregar dados iniciais', error.message);
         }
     }
 
@@ -122,7 +122,7 @@ class IoTDashboard {
                 
                 const sensorTypeData = latestData.sensors[sensorType];
                 if (!sensorTypeData || sensorTypeData.length === 0) {
-                    console.log(`No sensors found for type: ${sensorType}`);
+                    console.log(`Nenhum sensor encontrado para o tipo: ${sensorType}`);
                     continue;
                 }
                 
@@ -139,7 +139,7 @@ class IoTDashboard {
                 }
                 
             } catch (error) {
-                console.error(`Error loading historical data for ${sensorType}:`, error);
+                console.error(`Erro ao carregar histórico para ${sensorType}:`, error);
             }
         }
     }
@@ -160,7 +160,7 @@ class IoTDashboard {
         this.charts[sensorType].data.datasets[0].data = values;
         this.charts[sensorType].update();
         
-        console.log(`Updated ${sensorType} chart with ${readings.length} historical points`);
+        console.log(`Gráfico de ${sensorType} atualizado com ${readings.length} pontos históricos`);
     }
 
     async loadSystemStats() {
@@ -171,7 +171,7 @@ class IoTDashboard {
                 this.updateSystemStatus(stats);
             }
         } catch (error) {
-            console.error('Error loading system stats:', error);
+            console.error('Erro ao carregar estatísticas do sistema:', error);
         }
     }
 
@@ -187,7 +187,7 @@ class IoTDashboard {
             this.updateLastUpdateDisplay();
         }
         
-        console.log('Sensor data processed:', Object.keys(sensors));
+        console.log('Dados de sensores processados:', Object.keys(sensors));
     }
 
     updateCurrentReadings(sensors) {
@@ -195,27 +195,27 @@ class IoTDashboard {
         if (sensors.temperature && sensors.temperature.length > 0) {
             const latest = sensors.temperature[0];
             document.getElementById('currentTemp').textContent = `${ChartUtils.formatNumber(latest.value, 1)}°C`;
-            document.getElementById('tempStatus').textContent = latest.anomaly ? 'ANOMALY DETECTED' : 'Normal';
+            document.getElementById('tempStatus').textContent = latest.anomaly ? 'ANOMALIA DETECTADA' : 'Normal';
             document.getElementById('tempStatus').className = latest.anomaly ? 'text-danger' : 'text-success';
-            document.getElementById('tempCount').textContent = `${sensors.temperature.length} sensors`;
+            document.getElementById('tempCount').textContent = `${sensors.temperature.length} sensores`;
         }
 
         // Humidity
         if (sensors.humidity && sensors.humidity.length > 0) {
             const latest = sensors.humidity[0];
             document.getElementById('currentHumidity').textContent = `${ChartUtils.formatNumber(latest.value, 1)}%`;
-            document.getElementById('humidityStatus').textContent = latest.anomaly ? 'ANOMALY DETECTED' : 'Normal';
+            document.getElementById('humidityStatus').textContent = latest.anomaly ? 'ANOMALIA DETECTADA' : 'Normal';
             document.getElementById('humidityStatus').className = latest.anomaly ? 'text-danger' : 'text-success';
-            document.getElementById('humidityCount').textContent = `${sensors.humidity.length} sensors`;
+            document.getElementById('humidityCount').textContent = `${sensors.humidity.length} sensores`;
         }
 
         // Luminosity
         if (sensors.luminosity && sensors.luminosity.length > 0) {
             const latest = sensors.luminosity[0];
             document.getElementById('currentLuminosity').textContent = `${ChartUtils.formatNumber(latest.value, 0)} lux`;
-            document.getElementById('luminosityStatus').textContent = latest.anomaly ? 'ANOMALY DETECTED' : 'Normal';
+            document.getElementById('luminosityStatus').textContent = latest.anomaly ? 'ANOMALIA DETECTADA' : 'Normal';
             document.getElementById('luminosityStatus').className = latest.anomaly ? 'text-danger' : 'text-success';
-            document.getElementById('luminosityCount').textContent = `${sensors.luminosity.length} sensors`;
+            document.getElementById('luminosityCount').textContent = `${sensors.luminosity.length} sensores`;
         }
     }
 
@@ -234,13 +234,13 @@ class IoTDashboard {
             this.websocket.close();
         }
 
-        console.log('Connecting to WebSocket:', this.config.websocketUrl);
+        console.log('Conectando ao WebSocket:', this.config.websocketUrl);
         
         try {
             this.websocket = new WebSocket(this.config.websocketUrl);
             
             this.websocket.onopen = () => {
-                console.log('WebSocket connected');
+                console.log('WebSocket conectado');
                 this.isConnected = true;
                 this.retryCount = 0;
                 this.updateConnectionStatus(true);
@@ -254,12 +254,12 @@ class IoTDashboard {
                     const message = JSON.parse(event.data);
                     this.handleWebSocketMessage(message);
                 } catch (error) {
-                    console.error('Error parsing WebSocket message:', error);
+                    console.error('Erro ao parsear mensagem do WebSocket:', error);
                 }
             };
             
             this.websocket.onclose = () => {
-                console.log('WebSocket disconnected');
+                console.log('WebSocket desconectado');
                 this.isConnected = false;
                 this.updateConnectionStatus(false);
                 
@@ -268,19 +268,19 @@ class IoTDashboard {
             };
             
             this.websocket.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.error('Erro no WebSocket:', error);
                 this.updateConnectionStatus(false);
             };
             
         } catch (error) {
-            console.error('Error creating WebSocket:', error);
+            console.error('Erro ao criar WebSocket:', error);
             this.updateConnectionStatus(false);
             this.scheduleReconnect();
         }
     }
 
     handleWebSocketMessage(message) {
-        console.log('WebSocket message received:', message.type);
+        console.log('Mensagem WebSocket recebida:', message.type);
         
         switch (message.type) {
             case 'sensor_data':
@@ -299,12 +299,12 @@ class IoTDashboard {
                 // Keep-alive response
                 break;
             default:
-                console.log('Unknown message type:', message.type);
+                console.log('Tipo de mensagem desconhecido:', message.type);
         }
     }
 
     handleSensorDataMessage(data) {
-        const { sensor_type, sensor_id, value, timestamp, anomaly } = data;
+        const { sensor_type, value, timestamp, anomaly } = data;
         
         // Update current reading display
         this.updateSingleSensorReading(sensor_type, data);
@@ -332,21 +332,9 @@ class IoTDashboard {
 
     updateSingleSensorReading(sensorType, data) {
         const elementMap = {
-            temperature: { 
-                value: 'currentTemp', 
-                status: 'tempStatus',
-                unit: '°C'
-            },
-            humidity: { 
-                value: 'currentHumidity', 
-                status: 'humidityStatus',
-                unit: '%'
-            },
-            luminosity: { 
-                value: 'currentLuminosity', 
-                status: 'luminosityStatus',
-                unit: ' lux'
-            }
+            temperature: { value: 'currentTemp', status: 'tempStatus', unit: '°C' },
+            humidity: { value: 'currentHumidity', status: 'humidityStatus', unit: '%' },
+            luminosity: { value: 'currentLuminosity', status: 'luminosityStatus', unit: ' lux' }
         };
         
         const elements = elementMap[sensorType];
@@ -360,7 +348,7 @@ class IoTDashboard {
         }
         
         if (statusElement) {
-            statusElement.textContent = data.anomaly ? 'ANOMALY DETECTED' : 'Normal';
+            statusElement.textContent = data.anomaly ? 'ANOMALIA DETECTADA' : 'Normal';
             statusElement.className = data.anomaly ? 'text-danger' : 'text-success';
         }
     }
@@ -389,9 +377,9 @@ class IoTDashboard {
                 this.updateWeatherComparison(comparison);
             }
         } catch (error) {
-            console.error('Error loading weather comparison:', error);
+            console.error('Erro ao carregar comparação do clima:', error);
             document.getElementById('weatherComparison').innerHTML = 
-                ChartUtils.createErrorMessage('Failed to load weather comparison');
+                ChartUtils.createErrorMessage('Falha ao carregar a comparação do clima');
         }
     }
 
@@ -443,14 +431,14 @@ class IoTDashboard {
 
     scheduleReconnect() {
         if (this.retryCount >= this.maxRetries) {
-            console.log('Max reconnection attempts reached');
+            console.log('Máximo de tentativas de reconexão atingido');
             return;
         }
         
         this.retryCount++;
         const delay = Math.min(1000 * Math.pow(2, this.retryCount), 30000); // Exponential backoff, max 30s
         
-        console.log(`Scheduling reconnection attempt ${this.retryCount} in ${delay}ms`);
+        console.log(`Agendando tentativa de reconexão ${this.retryCount} em ${delay}ms`);
         
         setTimeout(() => {
             this.connectWebSocket();
@@ -463,10 +451,10 @@ class IoTDashboard {
         
         if (connected) {
             statusElement.className = 'status-indicator status-connected';
-            textElement.textContent = 'Connected';
+            textElement.textContent = 'Conectado';
         } else {
             statusElement.className = 'status-indicator status-disconnected';
-            textElement.textContent = 'Disconnected';
+            textElement.textContent = 'Desconectado';
         }
         
         // Update MQTT status
@@ -479,7 +467,7 @@ class IoTDashboard {
     updateLastUpdateDisplay() {
         const element = document.getElementById('lastUpdate');
         if (this.lastUpdate && element) {
-            element.textContent = `Last updated: ${ChartUtils.formatDate(this.lastUpdate)}`;
+            element.textContent = `Última atualização: ${ChartUtils.formatDate(this.lastUpdate)}`;
         }
     }
 
@@ -509,9 +497,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('visibilitychange', () => {
     if (window.dashboard) {
         if (document.hidden) {
-            console.log('Page hidden - reducing update frequency');
+            console.log('Página oculta - reduzindo frequência de atualização');
         } else {
-            console.log('Page visible - resuming normal updates');
+            console.log('Página visível - retomando atualizações');
             window.dashboard.loadInitialData();
         }
     }
