@@ -55,19 +55,52 @@ services:
     restart: unless-stopped
 
   temp-sensor:
-    build:
-      context: ./edge/sensors
-      dockerfile: Dockerfile
+    image: python:3.11-slim
     container_name: iot-temp-sensor
+    working_dir: /app/edge/sensors
     environment:
       - MQTT_HOST=mosquitto
       - MQTT_PORT=1883
-    env_file:
-      - .env
+    volumes:
+      - ./edge:/app/edge:ro
     depends_on:
       - mosquitto
+    command: >
+      sh -c "pip install --no-cache-dir -r /app/edge/sensors/requirements.txt
+      && python temp_sensor.py"
     restart: unless-stopped
-    command: ["python", "temp_sensor.py"]
+
+  humidity-sensor:
+    image: python:3.11-slim
+    container_name: iot-humidity-sensor
+    working_dir: /app/edge/sensors
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+    volumes:
+      - ./edge:/app/edge:ro
+    depends_on:
+      - mosquitto
+    command: >
+      sh -c "pip install --no-cache-dir -r /app/edge/sensors/requirements.txt
+      && python humidity_sensor.py"
+    restart: unless-stopped
+
+  luminosity-sensor:
+    image: python:3.11-slim
+    container_name: iot-luminosity-sensor
+    working_dir: /app/edge/sensors
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+    volumes:
+      - ./edge:/app/edge:ro
+    depends_on:
+      - mosquitto
+    command: >
+      sh -c "pip install --no-cache-dir -r /app/edge/sensors/requirements.txt
+      && python luminosity_sensor.py"
+    restart: unless-stopped
 
 volumes:
   mosquitto_data:

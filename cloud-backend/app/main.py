@@ -14,10 +14,10 @@ import json
 from typing import List
 
 # Import models and services
-from models.schemas import create_tables
-from services.mqtt_client import init_mqtt_service, get_mqtt_service
-from services.openweather import get_openweather_service
-from api.v1 import auth, sensors
+from app.models.schemas import create_tables
+from app.services.mqtt_client import init_mqtt_service, get_mqtt_service
+from app.services.openweather import get_openweather_service
+from app.api.v1 import auth, sensors
 
 # Setup logging
 logging.basicConfig(
@@ -81,11 +81,13 @@ async def lifespan(app: FastAPI):
     
     # Initialize MQTT service
     mqtt_service = init_mqtt_service(MQTT_HOST, MQTT_PORT)
-    
+    # Bind the running asyncio loop for thread-safe callbacks (MQTT runs in a thread)
+    loop = asyncio.get_running_loop()
+    mqtt_service.set_event_loop(loop)
+
     # Add WebSocket callback to MQTT service
     async def websocket_callback(message: dict):
         await manager.broadcast(json.dumps(message))
-    
     mqtt_service.add_websocket_callback(websocket_callback)
     
     # Start MQTT service

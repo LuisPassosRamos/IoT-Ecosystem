@@ -7,7 +7,7 @@ import requests
 import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
-from models.schemas import WeatherResponse
+from app.models.schemas import WeatherResponse
 
 logger = logging.getLogger(__name__)
 

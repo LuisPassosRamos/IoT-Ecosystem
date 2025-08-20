@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, Set, Callable, Optional
 import paho.mqtt.client as mqtt
 from sqlalchemy.orm import Session
-from models.schemas import SensorReading, get_db, SessionLocal
+from app.models.schemas import SensorReading, get_db, SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ class MQTTService:
         self.port = port
         self.client = mqtt.Client(client_id="iot-backend")
         self.connected = False
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
         self.websocket_callbacks: Set[Callable] = set()
         self.latest_readings: Dict[str, Dict] = {}
         
@@ -124,10 +125,16 @@ class MQTTService:
             # Update latest readings cache
             self.latest_readings[f"{sensor_type}_{sensor_id}"] = reading_data
             
+            # Prepare WebSocket-safe payload (datetime -> ISO string)
+            ws_data = reading_data.copy()
+            ts = ws_data.get('timestamp')
+            if isinstance(ts, datetime):
+                ws_data['timestamp'] = ts.isoformat()
+
             # Notify WebSocket clients
             self._notify_websocket_clients({
                 'type': 'sensor_data',
-                'data': reading_data,
+                'data': ws_data,
                 'timestamp': datetime.utcnow().isoformat()
             })
             
@@ -164,16 +171,32 @@ class MQTTService:
             logger.error(f"Error storing sensor reading: {e}")
     
     def _notify_websocket_clients(self, message: dict):
-        """Notify all connected WebSocket clients"""
+        """Notify all connected WebSocket clients from MQTT thread safely."""
+        if not self.websocket_callbacks:
+            return
+        if not self.loop or not self.loop.is_running():
+            logger.error("No running event loop set on MQTTService")
+            return
         for callback in self.websocket_callbacks:
             try:
-                asyncio.create_task(callback(message))
+                fut = asyncio.run_coroutine_threadsafe(callback(message), self.loop)
+                # Log exceptions raised inside the callback
+                def _done(f):
+                    try:
+                        f.result()
+                    except Exception as exc:
+                        logger.error(f"WebSocket callback error: {exc}")
+                fut.add_done_callback(_done)
             except Exception as e:
                 logger.error(f"Error notifying WebSocket client: {e}")
     
-    def add_websocket_callback(self, callback: Callable):
+    def set_event_loop(self, loop: asyncio.AbstractEventLoop):
+        """Set asyncio loop to schedule async callbacks from MQTT thread."""
+        self.loop = loop
+
+    def add_websocket_callback(self, cb: Callable):
         """Add WebSocket callback for real-time updates"""
-        self.websocket_callbacks.add(callback)
+        self.websocket_callbacks.add(cb)
     
     def remove_websocket_callback(self, callback: Callable):
         """Remove WebSocket callback"""

@@ -59,6 +59,24 @@ This will automatically:
 - Handle MQTT connection and reconnection
 - Display structured logging output
 
+#### Run All Sensors with Docker Compose
+Start all edge sensors (dependencies auto-installed in the container):
+```bash
+docker compose up -d temp-sensor humidity-sensor luminosity-sensor
+```
+
+Check logs:
+```bash
+docker compose logs -f temp-sensor
+docker compose logs -f humidity-sensor
+docker compose logs -f luminosity-sensor
+```
+
+Stop sensors:
+```bash
+docker compose stop temp-sensor humidity-sensor luminosity-sensor
+```
+
 #### Environment Variables for Docker
 Configure in `.env` file:
 ```bash
@@ -78,11 +96,6 @@ Install dependencies and run locally for development:
 ```bash
 # Install dependencies
 pip install -r edge/sensors/requirements.txt
-
-# Set environment variables  
-export MQTT_HOST=localhost
-export MQTT_PORT=1883
-
 # Run temperature sensor
 python edge/sensors/temp_sensor.py
 ```

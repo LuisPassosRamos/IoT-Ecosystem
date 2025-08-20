@@ -4,11 +4,14 @@ import random
 import time
 from datetime import datetime
 import logging
+import os
 import aiocoap.resource as resource
 import aiocoap
 
-COAP_HOST = "0.0.0.0"
-COAP_PORT = 5683
+# On Windows, aiocoap fails when binding to any-address (0.0.0.0).
+# Make host configurable and default to localhost.
+COAP_HOST = os.getenv("COAP_HOST", "127.0.0.1")
+COAP_PORT = int(os.getenv("COAP_PORT", "5683"))
 SENSOR_ID = "coap-env-001"
 
 logging.basicConfig(level=logging.INFO)

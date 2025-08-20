@@ -7,14 +7,15 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
+from sqlalchemy import func, case
 
-from models.schemas import (
-    get_db, SensorReading, SensorReadingResponse, 
-    SensorLatestResponse, SensorHistoryResponse, WeatherResponse
+from app.models.schemas import (
+    SensorReading, get_db, SessionLocal,
+    SensorReadingResponse, SensorLatestResponse, SensorHistoryResponse, WeatherResponse,
 )
-from services.mqtt_client import get_mqtt_service
-from services.openweather import get_openweather_service
-from api.v1.auth import verify_token
+from app.services.openweather import get_openweather_service
+from app.services.mqtt_client import get_mqtt_service
+from app.api.v1.auth import verify_token
 
 router = APIRouter(prefix="/v1/sensors", tags=["sensors"])
 
@@ -29,7 +30,7 @@ async def get_latest_sensors(
     subquery = db.query(
         SensorReading.sensor_id,
         SensorReading.sensor_type,
-        db.func.max(SensorReading.timestamp).label('max_timestamp')
+        func.max(SensorReading.timestamp).label('max_timestamp')
     ).group_by(
         SensorReading.sensor_id,
         SensorReading.sensor_type
@@ -160,8 +161,13 @@ async def get_sensor_stats(
     # Count by sensor type
     type_stats = db.query(
         SensorReading.sensor_type,
-        db.func.count(SensorReading.id).label('count'),
-        db.func.count(db.case([(SensorReading.anomaly == True, 1)])).label('anomalies')
+        func.count(SensorReading.id).label('count'),
+        func.sum(
+            case(
+                (SensorReading.anomaly.is_(True), 1),
+                else_=0
+            )
+        ).label('anomalies')
     ).filter(
         and_(
             SensorReading.timestamp >= start_time,
@@ -172,7 +178,7 @@ async def get_sensor_stats(
     # Count by origin
     origin_stats = db.query(
         SensorReading.origin,
-        db.func.count(SensorReading.id).label('count')
+        func.count(SensorReading.id).label('count')
     ).filter(
         and_(
             SensorReading.timestamp >= start_time,
@@ -183,7 +189,7 @@ async def get_sensor_stats(
     # Count by protocol
     protocol_stats = db.query(
         SensorReading.source_protocol,
-        db.func.count(SensorReading.id).label('count')
+        func.count(SensorReading.id).label('count')
     ).filter(
         and_(
             SensorReading.timestamp >= start_time,

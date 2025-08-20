@@ -11,8 +11,9 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-from models.schemas import (
-    get_db, User, LoginRequest, Token, UserResponse
+from app.models.schemas import (
+    User, get_db, create_tables, SessionLocal,
+    Token, UserResponse, LoginRequest,
 )
 
 router = APIRouter(prefix="/v1/auth", tags=["authentication"])
