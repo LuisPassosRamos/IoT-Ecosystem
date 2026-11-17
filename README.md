@@ -1,4 +1,9 @@
 # IoT Ecosystem - Environmental Monitoring Platform
+
+> **Contexto para o portfólio:** projeto acadêmico em equipe de monitoramento ambiental Edge–Fog–Cloud, com sensores simulados. Minha participação se concentra no backend. A documentação descreve a arquitetura e também exemplos de evolução; não equivale a uma implantação de produção validada.
+>
+> [Portfólio de Luis Ramos](https://luispassosramos.github.io/LuisPortifolio/) · [Perfil profissional](https://github.com/LuisPassosRamos)
+
 Uma plataforma IoT modular e completa para monitoramento ambiental implementando arquitetura Edge-Fog-Cloud com múltiplos protocolos, visualização em tempo real e detecção inteligente de anomalias.
 
 ## 🌟 Features
