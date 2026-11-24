@@ -8,19 +8,23 @@ from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Import the main app and dependencies
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'cloud-backend', 'app'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'cloud-backend'))
 
-from main import app
-from models.schemas import get_db, Base, SensorReading, User
-from api.v1.auth import get_password_hash
+from app.main import app
+from app.models.schemas import get_db, Base, SensorReading, User
+from app.api.v1.auth import get_password_hash
 
 # Test database setup
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_iot.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    "sqlite://",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def override_get_db():
@@ -30,23 +34,20 @@ def override_get_db():
     finally:
         db.close()
 
-app.dependency_overrides[get_db] = override_get_db
-
 @pytest.fixture(scope="module")
 def client():
     # Create test database tables
     Base.metadata.create_all(bind=engine)
     
     # Create test client
-    client = TestClient(app)
-    
-    # Setup test data
-    setup_test_data()
-    
-    yield client
-    
-    # Cleanup
-    Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        setup_test_data()
+        # The API tests exercise routes without starting external services.
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.pop(get_db)
+        engine.dispose()
 
 def setup_test_data():
     """Setup test data for the test database"""

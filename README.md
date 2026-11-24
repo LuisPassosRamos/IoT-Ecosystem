@@ -155,16 +155,14 @@ coap://localhost:5683/temperature # Temperature only
 
 ## 🧪 Testes
 
-### Run Backend Tests
+Na raiz do repositório, com Python 3.12 em um ambiente virtual:
+
 ```bash
-cd tests
-python -m pytest test_backend.py -v
+python -m pip install -r tests/requirements.txt
+python -m pytest -q
 ```
 
-### Run Sensor Tests
-```bash
-python -m pytest test_sensors.py -v
-```
+Os [testes da API](tests/test_backend.py) usam SQLite em memória. Os [testes dos sensores](tests/test_sensors.py) exercitam geração, detecção de anomalias e publicação com o cliente MQTT simulado. A suíte pode rodar sem Docker, broker ou chave OpenWeather.
 
 ### Manual API Testing
 ```bash
