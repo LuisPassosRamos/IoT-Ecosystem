@@ -13,15 +13,7 @@ import os
 # Add edge sensors to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'edge', 'sensors'))
 
-# Mock MQTT client before importing sensor modules
-mock_mqtt = Mock()
-mock_mqtt.Client = Mock
-mock_mqtt.MQTT_ERR_SUCCESS = 0
-sys.modules['paho'] = Mock()
-sys.modules['paho.mqtt'] = mock_mqtt
-sys.modules['paho.mqtt.client'] = mock_mqtt
-
-# Import sensor classes after mocking
+# Each fixture replaces the MQTT client while preserving normal module imports.
 from temp_sensor import TemperatureSensor
 from humidity_sensor import HumiditySensor
 from luminosity_sensor import LuminositySensor
@@ -254,30 +246,31 @@ class TestLuminositySensor:
 class TestSensorAnomalyGeneration:
     """Test anomaly generation across all sensors"""
     
-    @pytest.fixture(params=[TemperatureSensor, HumiditySensor, LuminositySensor])
-    def sensor_class(self, request):
-        return request.param
-    
-    def test_anomaly_frequency(self, sensor_class):
-        """Test that anomalies are generated at expected frequency"""
+    @pytest.mark.parametrize(
+        ("sensor_class", "normal_value", "anomalous_value", "random_values"),
+        [
+            (TemperatureSensor, 22.0, 45.0, [0.0, 0.0]),
+            (HumiditySensor, 55.0, 90.0, [0.0, 0.0]),
+            (LuminositySensor, 500, 4000, [0.0, 0.5, 0.0]),
+        ],
+    )
+    def test_generated_anomaly_is_marked(
+        self, sensor_class, normal_value, anomalous_value, random_values
+    ):
+        module = sensor_class.__module__
         with patch(f'{sensor_class.__module__}.mqtt.Client'):
             sensor = sensor_class()
-            sensor.client = Mock()
-            
-            anomaly_count = 0
-            total_readings = 1000
-            
-            for _ in range(total_readings):
-                value = sensor.generate_reading()
-                payload = sensor.create_payload(value)
-                if payload.get('anomaly'):
-                    anomaly_count += 1
-                sensor.last_value = value
-            
-            anomaly_rate = anomaly_count / total_readings
-            
-            # Expect roughly 5-10% anomaly rate
-            assert 0.02 <= anomaly_rate <= 0.15, f"Anomaly rate {anomaly_rate:.2%} outside expected range"
+        sensor.last_value = normal_value
+        assert not sensor.create_payload(normal_value).get("anomaly")
+
+        with (
+            patch(f"{module}.random.random", side_effect=random_values),
+            patch(f"{module}.random.uniform", return_value=anomalous_value),
+            patch(f"{module}.random.choice", side_effect=lambda values: values[-1]),
+        ):
+            value = sensor.generate_reading()
+        assert value == anomalous_value
+        assert sensor.create_payload(value)["anomaly"] is True
 
 class TestSensorErrorHandling:
     """Test error handling in sensor operations"""
